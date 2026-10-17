@@ -151,7 +151,14 @@ This writes `.mcp.json` (the `mycelium` MCP server) and `.claude/settings.local.
 | `handoff` / `pick_up_handoff` | Pass unfinished work across agents and teams |
 | `touch_components`, `live_agents`, `who_knows`, `lineage` | Presence, the live org, expertise, knowledge evolution |
 
-### Backfill from transcripts
+### Backfill from transcripts (and our dogfood org)
+The live API also serves a second org, `mycelium`: our real team, with memory imported from the Claude Code sessions in which we built Mycelium.
+1. Secrets, emails, hosts and home paths are scrubbed.
+2. An LLM proposes memories.
+3. We curate them.
+4. The write gate stores them.
+
+See `seed/mycelium_team.py` and `seed/dogfood_memories.json`.
 ```bash
 PYTHONPATH=. uv run python -m core.importer ~/.claude/projects/<project>/<session>.jsonl --org acme --dev Ishika --project "Mobile 3.0"
 ```
@@ -167,7 +174,7 @@ PYTHONPATH=. uv run python -m core.importer ~/.claude/projects/<project>/<sessio
 | `seed/` | Synthetic org with planted stories |
 | `eval/` | Vector-only vs graph benchmark plus results |
 | `web/` | Next.js app: live org, recall, compare, threads, company brain |
-| `docs/` | Graph model, Cypher, API contract, AI disclosure |
+| `docs/` | Graph model, Cypher, API contract, AI disclosure, [FalkorDB notes](docs/falkordb-notes.md), [demo script](docs/demo-script.md) |
 
 ## Honest limits
 - **The data is synthetic** (Rule 6). The planted stories make the mechanisms visible; real orgs are messier.
