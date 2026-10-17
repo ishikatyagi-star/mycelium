@@ -166,3 +166,14 @@ def test_tenant_isolation():
         assert "test_isolation" in list_orgs()
     finally:
         other.delete()
+
+
+def test_importer_scrubs_secrets_and_pii():
+    from core.importer import scrub
+    dirty = ("key sk-abc123def456ghi789jkl and xai-ABCDEF1234567890XYZ token=supersecretvalue "
+             "mail me at someone@example.com, see /Users/alice/proj and postgres://u:pw@db:5432/x "
+             "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.payload.sig ghp_abcdefghijklmnopqrstuvwx")
+    clean = scrub(dirty)
+    for leak in ["sk-abc123", "xai-ABCDEF", "supersecretvalue", "someone@example.com", "/Users/alice",
+                 "u:pw@", "eyJhbGciOiJIUzI1NiJ9", "ghp_abcdef"]:
+        assert leak not in clean, leak

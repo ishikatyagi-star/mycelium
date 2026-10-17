@@ -1,0 +1,9 @@
+.venv
+web
+.git
+**/__pycache__
+.env
+.mycelium
+blog
+docs
+tests

@@ -8,3 +8,5 @@ web/.next/
 .DS_Store
 eval/cache/
 .mycelium/
+.env.*
+!.env.example
