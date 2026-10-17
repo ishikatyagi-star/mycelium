@@ -62,3 +62,18 @@ def test_removal_test_db_down_gives_503(client, monkeypatch):
     assert client.get("/api/health").status_code == 503
     r = client.post(f"/api/orgs/{ORG}/recall", json={"query": "token refresh storm", "as_dev": "Ishika"})
     assert r.status_code == 503
+
+
+def test_janitor_deletes_old_sandboxes_and_expires_sessions(client, monkeypatch):
+    import time as _t
+    from core import memory as M
+    fresh = client.post("/api/sandbox").json()["org"]
+    old = f"sandbox_{int(_t.time()) - 4 * 3600:x}_dead"
+    Org(ORG).copy_to(old)
+    stale = M.start_session(Org(ORG), "Tom", "stale janitor probe task", started_at=int(_t.time()) - 3 * 3600)
+    r = api_main.janitor_once()
+    assert old in r["deleted_sandboxes"] and fresh not in r["deleted_sandboxes"]
+    assert r["expired_sessions"] >= 1
+    st = Org(ORG).read("t", "MATCH (s:Session {id:$s}) RETURN s.status AS st", {"s": stale["session_id"]})
+    assert st[0]["st"] == "done"
+    Org(fresh).delete()

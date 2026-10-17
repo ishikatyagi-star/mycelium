@@ -32,6 +32,46 @@ PUBLIC = os.getenv("MYC_PUBLIC") == "1"
 WRITE_TOKEN = os.getenv("MYC_WRITE_TOKEN", "")      # agents (MCP/fleet) send this to write to protected orgs
 PROTECTED_ORGS = {"acme"} if PUBLIC else set()
 
+SANDBOX_TTL_S = int(os.getenv("MYC_SANDBOX_TTL_S", str(3 * 3600)))
+MAX_SANDBOXES = 40
+
+
+def _sandbox_created(slug: str) -> int:
+    """Sandbox slugs embed their creation time: sandbox_<hex epoch>_<rand>. Legacy slugs count as expired."""
+    try:
+        return int(slug.split("_")[1], 16)
+    except (IndexError, ValueError):
+        return 0
+
+
+def janitor_once() -> dict:
+    """Housekeeping: close sessions whose agent stopped heartbeating; delete old visitor sandboxes."""
+    expired, deleted = 0, []
+    orgs = list_orgs()
+    for slug in orgs:
+        if not slug.startswith("sandbox_"):
+            expired += P.expire_stale(Org(slug))
+    sandboxes = sorted((s for s in orgs if s.startswith("sandbox_")), key=_sandbox_created)
+    for i, slug in enumerate(sandboxes):
+        too_old = time.time() - _sandbox_created(slug) > SANDBOX_TTL_S
+        too_many = len(sandboxes) - i > MAX_SANDBOXES
+        if too_old or too_many:
+            Org(slug).delete()
+            deleted.append(slug)
+    return {"expired_sessions": expired, "deleted_sandboxes": deleted}
+
+
+async def janitor_loop():
+    while True:
+        try:
+            r = await asyncio.to_thread(janitor_once)
+            if r["expired_sessions"] or r["deleted_sandboxes"]:
+                print("janitor:", r)
+        except Exception as e:
+            print("janitor error:", e)
+        await asyncio.sleep(60)
+
+
 @asynccontextmanager
 async def lifespan(_app):
     try:
@@ -42,7 +82,9 @@ async def lifespan(_app):
             ensure_schema(Org(slug))
     except Exception as e:  # keep the API up; /api/health reports DB state
         print("startup warning:", e)
+    task = asyncio.create_task(janitor_loop())
     yield
+    task.cancel()
 
 
 app = FastAPI(title="Mycelium", version="0.1.0", lifespan=lifespan)
@@ -387,9 +429,9 @@ def pickup(org: str, sid: str, hid: str, request: Request):
 
 @app.post("/api/sandbox")
 def sandbox():
-    slug = f"sandbox_{secrets.token_hex(3)}"
+    slug = f"sandbox_{int(time.time()):x}_{secrets.token_hex(2)}"
     Org("acme").copy_to(slug)
-    return {"org": slug}
+    return {"org": slug, "expires_in_s": SANDBOX_TTL_S}
 
 
 @app.get("/api/orgs/{org}/events")

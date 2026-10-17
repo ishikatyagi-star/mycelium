@@ -1,9 +1,12 @@
 """Live awareness: which agents are running right now, on what, and who overlaps with whom."""
 from __future__ import annotations
 
+import os
+
 from .db import Org, now
 
-LIVE_WINDOW_S = 30 * 60      # a session with no heartbeat for 30 min is no longer live
+# a session with no heartbeat (prompt, tool use, fleet tick) for this long is no longer live
+LIVE_WINDOW_S = int(os.getenv("MYC_LIVE_WINDOW_S", str(15 * 60)))
 OVERLAP_MIN_SIM = 0.70
 
 
