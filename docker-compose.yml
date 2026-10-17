@@ -1,0 +1,15 @@
+services:
+  falkordb:
+    # pinned by digest: falkordb/falkordb v4.22.1 (= :latest on 2026-10-15, same engine line as FalkorDB Cloud free)
+    image: falkordb/falkordb@sha256:b0bdcac2cbaff989e77cb0610439b7a9289e86de033ccbbd4368b66fb680ae7a
+    ports:
+      - "6379:6379"
+      - "3000:3000"   # FalkorDB Browser
+    volumes:
+      - falkordb_data:/var/lib/falkordb/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 10
+volumes:
+  falkordb_data:

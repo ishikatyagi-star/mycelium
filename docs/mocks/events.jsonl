@@ -1,0 +1,10 @@
+{"type":"session_started","session_id":"ses_ab12","dev":{"name":"Ishika","team":"Mobile"},"task":"Users get logged out after JWT signing key rotation","components":["mobile-app","auth-gateway"]}
+{"type":"overlap","a":{"session_id":"ses_ab12","dev":{"name":"Ishika","team":"Mobile"}},"b":{"session_id":"ses_live_1","dev":{"name":"Meera","team":"Identity"}},"score":0.74,"task":"Rotate the token signing keys and publish a new JWKS"}
+{"type":"question_asked","question_id":"q_1","text":"Is anyone changing the JWKS signing keys right now?","asker":{"name":"Ishika","team":"Mobile"}}
+{"type":"question_routed","question_id":"q_1","to":{"kind":"session","id":"ses_live_1","dev":{"name":"Meera","team":"Identity"}},"reason":"agent is live on token-service right now"}
+{"type":"answer","question_id":"q_1","by":{"name":"Meera","team":"Identity"},"text":"Yes, rotating at 14:00 UTC; refetch JWKS on unknown kid."}
+{"type":"notice","notice_id":"ntc_1","component":"token-service","text":"Signing keys rotate today 14:00 UTC","by":{"name":"Meera","team":"Identity"},"delivered_to":[{"session_id":"ses_ab12","dev":{"name":"Ishika","team":"Mobile"}},{"session_id":"ses_live_2","dev":{"name":"Tom","team":"Mobile"}}]}
+{"type":"memory_saved","solution_id":"sol_x1","title":"Refetch JWKS on unknown kid","dev":{"name":"Ishika","team":"Mobile"}}
+{"type":"reuse","solution_id":"sol_refresh_v2","title":"Single-flight token refresh","by":{"name":"Ishika","team":"Mobile"},"author":{"name":"Yash","team":"Payments"},"tokens_saved":168000}
+{"type":"handoff","handoff_id":"hof_1","from":{"name":"Tom"},"task":"Batch push notifications to cut APNs costs"}
+{"type":"session_ended","session_id":"ses_ab12"}
