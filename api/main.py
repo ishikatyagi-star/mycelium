@@ -11,6 +11,7 @@ import os
 import secrets
 import time
 from collections import defaultdict, deque
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -31,7 +32,20 @@ PUBLIC = os.getenv("MYC_PUBLIC") == "1"
 WRITE_TOKEN = os.getenv("MYC_WRITE_TOKEN", "")      # agents (MCP/fleet) send this to write to protected orgs
 PROTECTED_ORGS = {"acme"} if PUBLIC else set()
 
-app = FastAPI(title="Mycelium", version="0.1.0")
+@asynccontextmanager
+async def lifespan(_app):
+    try:
+        if "acme" not in list_orgs() and os.getenv("MYC_AUTOSEED", "1") == "1":
+            from seed.acme import seed
+            seed("acme")
+        for slug in list_orgs():
+            ensure_schema(Org(slug))
+    except Exception as e:  # keep the API up; /api/health reports DB state
+        print("startup warning:", e)
+    yield
+
+
+app = FastAPI(title="Mycelium", version="0.1.0", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 # ---------------------------------------------------------------- plumbing
@@ -208,13 +222,15 @@ class AnswerBody(BaseModel):
     text: str = Field(min_length=2, max_length=8000)
     as_dev: str | None = None
     session_id: str | None = None
+    save_as_memory: bool = True
 
 
 @app.post("/api/orgs/{org}/questions/{qid}/answer")
 def answer(org: str, qid: str, body: AnswerBody, request: Request):
     o = org_for(org, request, write=True)
     try:
-        return Msg.answer(o, qid, body.text, session_id=body.session_id, dev=body.as_dev)
+        return Msg.answer(o, qid, body.text, session_id=body.session_id, dev=body.as_dev,
+                          save_as_memory=body.save_as_memory)
     except ValueError as e:
         bad(e)
 
@@ -395,15 +411,3 @@ async def stream(org: str, request: Request):
             pubsub.close()
 
     return EventSourceResponse(gen())
-
-
-@app.on_event("startup")
-def startup():
-    try:
-        if "acme" not in list_orgs() and os.getenv("MYC_AUTOSEED", "1") == "1":
-            from seed.acme import seed
-            seed("acme")
-        for slug in list_orgs():
-            ensure_schema(Org(slug))
-    except Exception as e:  # keep the API up; /api/health reports DB state
-        print("startup warning:", e)

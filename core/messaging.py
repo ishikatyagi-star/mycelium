@@ -54,10 +54,10 @@ def route(org: Org, question: str, asker_dev: str, emb: list[float] | None = Non
     # 1) what part of the org is this about? components touched while solving similar tasks
     comp_rows = org.read("route.components_from_similar_work",
                          """CALL db.idx.vector.queryNodes('Task','embedding',8,vecf32($emb)) YIELD node AS t, score
-                            WITH t, 1 - score AS sim WHERE sim >= 0.6
+                            WITH t, 1 - score AS sim WHERE sim >= 0.68
                             MATCH (t)<-[:WORKED_ON]-(:Session)-[:TOUCHES]->(c:Component)
                             RETURN c.name AS component, max(sim) AS w""", {"emb": emb})
-    comps = {r["component"]: r["w"] for r in comp_rows}
+    comps = {r["component"]: min(1.0, (r["w"] - 0.6) / 0.3) for r in comp_rows}
     mentioned = org.read("route.components_mentioned",
                          "MATCH (c:Component) WHERE toLower($q) CONTAINS toLower(c.name) RETURN c.name AS component",
                          {"q": question})
@@ -65,12 +65,12 @@ def route(org: Org, question: str, asker_dev: str, emb: list[float] | None = Non
         comps[r["component"]] = 1.0
     comp_list = [{"name": k, "w": v} for k, v in comps.items()]
 
-    cand: dict[str, dict] = defaultdict(lambda: {"score": 0.0, "reasons": [], "links": [], "nodes": {}})
+    cand: dict[str, dict] = defaultdict(lambda: {"by_kind": defaultdict(float), "reasons": [], "links": [], "nodes": {}})
 
-    def add(dev, team, pts, reason, nodes, links, session=None):
+    def add(dev, team, pts, reason, nodes, links, session=None, kind="other"):
         c = cand[dev]
         c["dev"] = {"name": dev, "team": team}
-        c["score"] += pts
+        c["by_kind"][kind] = max(c["by_kind"][kind], pts)   # strongest evidence of each kind, no piling up
         c["reasons"].append(reason)
         for n in nodes:
             c["nodes"][n["id"]] = n
@@ -96,7 +96,7 @@ def route(org: Org, question: str, asker_dev: str, emb: list[float] | None = Non
                 [{"source": qid, "target": nid("Component", r["component"]), "type": "ABOUT"},
                  {"source": nid("Session", r["sid"]), "target": nid("Component", r["component"]), "type": "TOUCHES"},
                  {"source": nid("Dev", r["dev"]), "target": nid("Session", r["sid"]), "type": "RAN"}],
-                session=r["sid"])
+                session=r["sid"], kind="live")
         # 3) owners of those components
         for r in org.read("route.owners",
                           """UNWIND $comps AS cw MATCH (t:Team)-[:OWNS]->(c:Component {name:cw.name})
@@ -109,7 +109,7 @@ def route(org: Org, question: str, asker_dev: str, emb: list[float] | None = Non
                  {"id": nid("Dev", r["dev"]), "label": "Dev", "name": r["dev"], "team": r["team"]}],
                 [{"source": qid, "target": nid("Component", r["component"]), "type": "ABOUT"},
                  {"source": nid("Team", r["team"]), "target": nid("Component", r["component"]), "type": "OWNS"},
-                 {"source": nid("Dev", r["dev"]), "target": nid("Team", r["team"]), "type": "MEMBER_OF"}])
+                 {"source": nid("Dev", r["dev"]), "target": nid("Team", r["team"]), "type": "MEMBER_OF"}], kind="owner")
     # 4) people who solved similar problems before (any status: even a failed attempt is experience)
     for r in org.read("route.past_solvers",
                       """CALL db.idx.vector.queryNodes('Task','embedding',8,vecf32($emb)) YIELD node AS t, score
@@ -122,12 +122,12 @@ def route(org: Org, question: str, asker_dev: str, emb: list[float] | None = Non
             [{"id": nid("Solution", r["sol"]), "label": "Solution", "name": r["title"]},
              {"id": nid("Dev", r["dev"]), "label": "Dev", "name": r["dev"], "team": r["team"]}],
             [{"source": qid, "target": nid("Solution", r["sol"]), "type": "SIMILAR_TO"},
-             {"source": nid("Dev", r["dev"]), "target": nid("Solution", r["sol"]), "type": "AUTHORED"}])
+             {"source": nid("Dev", r["dev"]), "target": nid("Solution", r["sol"]), "type": "AUTHORED"}], kind="solver")
     # 5) authority: PageRank over who-credits-whom
     pr = pagerank(org)
     out = []
     for dev, c in cand.items():
-        score = c["score"] * (1 + 0.5 * pr.get(dev, 0.0))
+        score = sum(c["by_kind"].values()) * (1 + 0.5 * pr.get(dev, 0.0))
         out.append({"kind": "session" if c.get("session") else "dev",
                     "id": c.get("session") or dev, "dev": c["dev"], "score": round(score, 3),
                     "reason": "; ".join(dict.fromkeys(c["reasons"]))[:400],
@@ -197,7 +197,7 @@ def ask_org(org: Org, question: str, session_id: str | None = None, dev: str | N
 
 
 def answer(org: Org, question_id: str, text: str, session_id: str | None = None,
-           dev: str | None = None) -> dict:
+           dev: str | None = None, save_as_memory: bool = True) -> dict:
     who = _asker(org, session_id, dev)
     q = org.read("answer.question",
                  """MATCH (asker:Dev)-[:ASKED]->(q:Question {id:$qid})
@@ -216,6 +216,10 @@ def answer(org: Org, question_id: str, text: str, session_id: str | None = None,
               {"qid": question_id, "dev": who["dev"], "aid": aid, "text": text, "at": now(), "asker": q["asker"]})
     # The answer becomes org memory, so the next agent with this question never has to ask.
     # A short 'answer' session makes the Solution SOLVE the question's own task.
+    if not save_as_memory:
+        events.publish(org.slug, "answer", question_id=question_id, by={"name": who["dev"], "team": who["team"]},
+                       text=text[:300])
+        return {"ok": True, "answer_id": aid, "memory_solution_id": None}
     tmp = start_session(org, who["dev"], q["text"], agent="answer", status="done")
     end_session(org, tmp["session_id"])
     saved = save_solution(org, SaveRequest(session_id=tmp["session_id"], title=f"Q: {q['text'][:120]}",

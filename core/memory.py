@@ -250,7 +250,9 @@ def _effort_boost(minutes: int | None, attempts: int | None) -> float:
     return 1 + 0.08 * math.log1p(hours) + 0.04 * math.log1p(attempts or 0)
 
 
-STATUS_FACTOR = {"active": 1.0, "broken": 0.45, "superseded": 0.6}
+# a broken fix with no replacement is still the most relevant thing we know (shown with its failure)
+STATUS_FACTOR = {"active": 1.0, "broken": 0.75, "superseded": 0.6}
+RELATIVE_CUTOFF = 0.22   # drop hits much less similar than the best one (noise)
 
 
 def _candidates(org: Org, query_emb: list[float], viewer: str, n: int) -> list[dict]:
@@ -416,6 +418,9 @@ def recall(org: Org, query: str, viewer: str, k: int = 5, graph: bool = True) ->
                  * _effort_boost(d["effort_minutes"], d["attempts"])
                  * (1 + 0.05 * math.log1p(d["reuse_ok"] or 0)))
         results.append(_memory(d, c, c["sim"], score, skipped, _path(c, c["chain"], d, titles)))
+    if results:
+        best_sim = max(m["similarity"] for m in results)
+        results = [m for m in results if m["similarity"] >= best_sim - RELATIVE_CUTOFF]
     results.sort(key=lambda m: m["score"], reverse=True)
     return results[:k]
 

@@ -35,9 +35,10 @@ def detect_overlaps(org: Org, session_id: str) -> list[dict]:
                     """MATCH (me:Session {id:$sid})-[:WORKED_ON]->(t:Task)
                        MATCH (me)<-[:RAN]-(md:Dev)-[:MEMBER_OF]->(mt:Team)
                        CALL db.idx.vector.queryNodes('Task','embedding',10,t.embedding) YIELD node AS ot, score
-                       WITH me, mt, ot, 1 - score AS sim WHERE sim >= $min_sim
+                       WITH me, md, mt, ot, 1 - score AS sim WHERE sim >= $min_sim
                        MATCH (other:Session {status:'live'})-[:WORKED_ON]->(ot)
                        WHERE other <> me AND other.last_seen >= $since
+                       MATCH (other)<-[:RAN]-(od0:Dev) WHERE od0 <> md
                        MATCH (other)<-[:RAN]-(od:Dev)-[:MEMBER_OF]->(otm:Team)
                        RETURN DISTINCT other.id AS session_id, od.name AS dev, otm.name AS team,
                               other.task AS task, sim, otm <> mt AS cross_team,
