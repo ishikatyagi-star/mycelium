@@ -30,7 +30,7 @@ from core.schema import ensure_schema
 
 PUBLIC = os.getenv("MYC_PUBLIC") == "1"
 WRITE_TOKEN = os.getenv("MYC_WRITE_TOKEN", "")      # agents (MCP/fleet) send this to write to protected orgs
-PROTECTED_ORGS = {"acme"} if PUBLIC else set()
+PROTECTED_ORGS = {"acme", "mycelium"} if PUBLIC else set()
 
 SANDBOX_TTL_S = int(os.getenv("MYC_SANDBOX_TTL_S", str(3 * 3600)))
 MAX_SANDBOXES = 40

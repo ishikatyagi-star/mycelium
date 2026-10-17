@@ -27,6 +27,7 @@ SECRET_PATTERNS = [
     (re.compile(r"(?i)((?:api[_-]?key|secret|password|passwd|token)\s*[=:]\s*)['\"]?[^\s'\"]{6,}"), r"\1<redacted>"),
     (re.compile(r"://[^/\s:@]+:[^/\s@]+@"), "://<redacted>@"),
     (re.compile(r"[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}"), "<email>"),
+    (re.compile(r"\b[\w-]+(?:\.[\w-]+){3,}\.(?:cloud|internal|amazonaws\.com)\b"), "<host>"),
     (re.compile(r"/Users/[^/\s]+"), "~"),
     (re.compile(r"/home/[^/\s]+"), "~"),
 ]
@@ -48,14 +49,27 @@ def _text(content) -> tuple[str, list[str]]:
             continue
         if b.get("type") == "text":
             texts.append(b.get("text", ""))
+        elif b.get("type") == "tool_use":   # the agent's one-line intent for each action is good narrative
+            desc = (b.get("input") or {}).get("description")
+            if desc:
+                texts.append(f"[action] {desc}")
         elif b.get("type") == "tool_result" and b.get("is_error"):
             c = b.get("content")
             errors.append(c if isinstance(c, str) else json.dumps(c)[:300])
+        elif b.get("type") == "tool_result" and not b.get("is_error"):
+            c = b.get("content")
+            c = c if isinstance(c, str) else json.dumps(c)
+            if any(k in c for k in ("Error", "Traceback", "error:", "FAILED", "Unauthorized")):
+                errors.append(c[-300:])
     return "\n".join(texts), errors
 
 
+CHUNK = 14  # long autonomous stretches are split so each chunk yields its own lessons
+
+
 def parse(path: Path) -> list[dict]:
-    """Segments: one per real user prompt, with the assistant's narrative and tool errors that followed."""
+    """Segments: one per real user prompt (long stretches split into chunks of the assistant's narrative),
+    with the tool errors that occurred along the way."""
     segments: list[dict] = []
     cur = None
     for line in path.read_text().splitlines():
@@ -75,6 +89,10 @@ def parse(path: Path) -> list[dict]:
         elif e.get("type") == "assistant" and cur is not None:
             text, _ = _text(msg.get("content"))
             if text.strip():
+                if len(cur["assistant"]) >= CHUNK:   # continue the same prompt in a fresh chunk
+                    cur = {"prompt": cur["prompt"], "assistant": [], "errors": [], "start": ts, "end": ts,
+                           "continued": True}
+                    segments.append(cur)
                 cur["assistant"].append(text.strip())
             cur["end"] = ts or cur["end"]
     for s in segments:
@@ -94,8 +112,9 @@ def _ts(iso: str | None) -> int | None:
 
 
 def propose(seg: dict) -> list[dict]:
-    digest = (f"USER ASKED:\n{seg['prompt'][:1500]}\n\nAGENT SAID (excerpts):\n"
-              + "\n---\n".join(seg["assistant"][-6:])[:6000]
+    digest = (f"USER ASKED{' (earlier; this is a later stretch of the same work)' if seg.get('continued') else ''}:\n"
+              f"{seg['prompt'][:1200]}\n\nAGENT SAID (in order):\n"
+              + "\n---\n".join(seg["assistant"])[:9000]
               + ("\n\nERRORS HIT:\n" + "\n".join(seg["errors"][:6]) if seg["errors"] else ""))
     out = llm.chat_json(
         "You extract reusable engineering knowledge from an AI coding session for a company memory graph. "
@@ -104,7 +123,7 @@ def propose(seg: dict) -> list[dict]:
         digest + '\n\nReturn {"memories": [{"task": str (the problem, one sentence), "title": str (<=90 chars), '
                  '"summary": str (2-4 sentences: what worked and why), "lessons": [{"text": str, "kind": '
                  '"pitfall"|"tip"|"dead_end"}], "libraries": [{"name": str, "version": str}]}]} '
-                 "with 0-2 memories.")
+                 "with 0-3 memories. Prefer concrete technical gotchas and fixes (exact error, root cause, fix).")
     if out and isinstance(out.get("memories"), list):
         return [m for m in out["memories"] if m.get("task") and m.get("title") and m.get("summary")]
     # heuristic fallback (no LLM): only segments where the agent clearly concluded something

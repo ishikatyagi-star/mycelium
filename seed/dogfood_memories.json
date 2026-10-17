@@ -1,0 +1,522 @@
+[
+ {
+  "task": "Cypher query returned incorrect count due to misplaced WHERE clause after WITH",
+  "title": "Fixing COUNT behavior in Cypher queries with WITH and WHERE",
+  "summary": "A query using `WHERE` after a `WITH` clause returned an unexpected count of 1. Replacing `count(s)` with `count(*)` also affected results. The root cause was the filter being applied too early in the query pipeline.",
+  "lessons": [
+   {
+    "text": "Avoid placing `WHERE` directly after `WITH` when you need to filter after aggregation; instead, use a subsequent `WITH ... WHERE` or compute excluded IDs separately and pass them as a list parameter.",
+    "kind": "pitfall"
+   },
+   {
+    "text": "Use `count(*)` for total row counts and ensure aggregation functions are applied after all necessary filters.",
+    "kind": "tip"
+   }
+  ],
+  "libraries": [],
+  "components": [
+   "graph-core"
+  ]
+ },
+ {
+  "task": "Docker environment setup for FalkorDB 6.0",
+  "title": "Automating FalkorDB Docker Compose initialization",
+  "summary": "The setup script pulled the FalkorDB Docker image, recorded its digest, and attempted to start the container via Docker Compose. Initial attempts failed due to missing Docker runtime and path issues (e.g., `orb not found`).",
+  "lessons": [
+   {
+    "text": "Ensure Docker Desktop is running and the correct Docker runtime (Docker Desktop vs. Colima) is selected before pulling images.",
+    "kind": "pitfall"
+   },
+   {
+    "text": "Verify the Docker Compose file references the exact image tag and that the image is available locally to avoid digest mismatches.",
+    "kind": "tip"
+   }
+  ],
+  "libraries": [
+   {
+    "name": "FalkorDB",
+    "version": "6.0"
+   }
+  ],
+  "components": [
+   "deploy",
+   "graph-core"
+  ]
+ },
+ {
+  "task": "Python environment provisioning for FalkorDB client",
+  "title": "Setting up Python 3.12 with FalkorDB dependencies",
+  "summary": "Created a Python 3.12 virtual environment and installed required FalkorDB client libraries. Probing revealed missing procedure support and vector index capabilities in the selected FalkorDB version.",
+  "lessons": [
+   {
+    "text": "Match the client library version to the FalkorDB server version to ensure all procedures and algorithms are available.",
+    "kind": "tip"
+   },
+   {
+    "text": "Run a probe script after installation to confirm supported procedures before building application logic.",
+    "kind": "tip"
+   }
+  ],
+  "libraries": [
+   {
+    "name": "falkordb",
+    "version": "latest compatible with 6.0"
+   }
+  ],
+  "components": [
+   "graph-core"
+  ]
+ },
+ {
+  "task": "Import error due to missing core module in smoke test script",
+  "title": "Resolve ModuleNotFoundError for core package",
+  "summary": "The smoke test script attempted to import 'core.db' but the core package was not on the Python path, causing a ModuleNotFoundError. Adding the project root to PYTHONPATH or installing the package in editable mode fixed the import. After the fix, the script could reach the database layer and continue testing.",
+  "lessons": [
+   {
+    "text": "Ensure the package directory is added to PYTHONPATH or installed in editable mode before running scripts that import internal modules.",
+    "kind": "tip"
+   },
+   {
+    "text": "Running scripts from the project root without proper path configuration leads to import failures.",
+    "kind": "pitfall"
+   }
+  ],
+  "libraries": [
+   {
+    "name": "redis-py",
+    "version": "5.0.1"
+   }
+  ],
+  "components": [
+   "importer"
+  ]
+ },
+ {
+  "task": "Redis graph operation on empty key causing ResponseError",
+  "title": "Handle empty graph key before executing queries",
+  "summary": "When executing a query against FalkorDB, the Redis client raised a ResponseError: 'Invalid graph operation on empty key' because the target graph had not been created or seeded. Initializing the graph (e.g., CREATE (:Node)) or ensuring the seed step runs before queries resolves the error. After seeding the synthetic Acme org, subsequent queries succeeded.",
+  "lessons": [
+   {
+    "text": "Always create or seed the graph before running any Cypher queries; otherwise Redis treats the key as empty.",
+    "kind": "tip"
+   },
+   {
+    "text": "Skipping the seed step leads to runtime errors that halt the test pipeline.",
+    "kind": "pitfall"
+   }
+  ],
+  "libraries": [
+   {
+    "name": "FalkorDB",
+    "version": "latest"
+   }
+  ],
+  "components": [
+   "graph-core"
+  ]
+ },
+ {
+  "task": "Fix MCP server launch path to maintain session state per project",
+  "title": "MCP server failed to start due to incorrect launch directory",
+  "summary": "The MCP server was launched from a different project folder, causing it to lose its session state and throw a connection closed error. Adjusting the launch script to set the working directory to the target project resolved the issue. After the fix, the server started reliably from any project directory.",
+  "lessons": [
+   {
+    "text": "Launching a server from the wrong working directory can break relative path expectations and cause session loss.",
+    "kind": "pitfall"
+   },
+   {
+    "text": "Explicitly cd into the target project directory before invoking the server ensures consistent environment.",
+    "kind": "tip"
+   }
+  ],
+  "libraries": [
+   {
+    "name": "uv",
+    "version": "latest"
+   }
+  ],
+  "components": [
+   "mcp-server"
+  ]
+ },
+ {
+  "task": "Resolve MCP server connection closed error in JSON-RPC dispatcher",
+  "title": "MCPError: Connection closed during JSON-RPC request",
+  "summary": "When invoking the MCP server via uv run, a MCPError was raised indicating the connection was closed. The root cause was the server process terminating early due to the incorrect launch path. After fixing the path, the JSON-RPC dispatcher could successfully send and receive messages.",
+  "lessons": [
+   {
+    "text": "A \"Connection closed\" MCPError often masks an upstream process crash rather than a network issue.",
+    "kind": "pitfall"
+   },
+   {
+    "text": "Verify that the server process stays alive and logs any startup failures before debugging RPC layers.",
+    "kind": "tip"
+   }
+  ],
+  "libraries": [
+   {
+    "name": "mcp",
+    "version": "2.x"
+   }
+  ],
+  "components": [
+   "mcp-server"
+  ]
+ },
+ {
+  "task": "Fix recall test where broken fixes disappear instead of showing with a warning",
+  "title": "Ensure broken fixes remain visible in recall results with warning flag",
+  "summary": "The recall system incorrectly filtered out broken fixes, causing them to vanish from results. The issue stemmed from the visibility filter applying a hard exclusion on fixes marked as broken. By adjusting the filter to retain broken fixes and annotate them with a warning, the test passed and users receive proper context about problematic solutions.",
+  "lessons": [
+   {
+    "text": "Do not use absolute exclusion filters for error states; instead, flag them for visibility.",
+    "kind": "pitfall"
+   },
+   {
+    "text": "Add a warning field to recall results for broken fixes to preserve traceability.",
+    "kind": "tip"
+   },
+   {
+    "text": "Run the full test suite after modifying filter logic to catch regressions early.",
+    "kind": "tip"
+   }
+  ],
+  "libraries": [
+   {
+    "name": "FalkorDB",
+    "version": "2.x"
+   }
+  ],
+  "components": [
+   "graph-core"
+  ]
+ },
+ {
+  "task": "Resolve Redis ResponseError: 'md' not defined",
+  "title": "Redis query failed due to undefined variable 'md'",
+  "summary": "During execution a Redis command raised ResponseError because the Cypher variable 'md' was referenced without being defined in the query. Defining the variable correctly in the Cypher statement eliminated the error and allowed the query to run. Proper query construction prevented runtime failures.",
+  "lessons": [
+   {
+    "text": "Ensure all variables used in Cypher/Redis queries are declared in the MATCH or WITH clause.",
+    "kind": "pitfall"
+   },
+   {
+    "text": "Validate queries with a static analyzer or test run before deploying to production.",
+    "kind": "tip"
+   }
+  ],
+  "libraries": [
+   {
+    "name": "redis-py",
+    "version": "5.0.1"
+   }
+  ],
+  "components": [
+   "graph-core"
+  ]
+ },
+ {
+  "task": "Fix overlap query variable drop and rebalance routing scores",
+  "title": "Overlap query bug and routing score imbalance fixed",
+  "summary": "A variable was unintentionally dropped in the overlap query, causing incorrect results and affecting fleet routing. The query was corrected, the seed data reseeded, and routing scores were rebalanced to improve answer quality. Subsequent benchmark runs showed stable performance across agents.",
+  "lessons": [
+   {
+    "text": "When modifying complex queries, run unit tests to catch missing variables early.",
+    "kind": "pitfall"
+   },
+   {
+    "text": "After query changes, re\u2011seed data and re\u2011run benchmarks to verify system behavior.",
+    "kind": "tip"
+   }
+  ],
+  "libraries": [],
+  "components": [
+   "fleet",
+   "graph-core"
+  ]
+ },
+ {
+  "task": "Installer needed to generate project configuration files automatically",
+  "title": "Installer rewritten to emit .mcp.json and hook scripts",
+  "summary": "The original installer did not create the required .mcp.json manifest or hook scripts, causing manual setup steps. By modifying the installer to write .mcp.json with project metadata and generate hook files directly, the setup became fully automated, reducing onboarding time and preventing configuration drift.",
+  "lessons": [
+   {
+    "text": "Hard\u2011coding paths or expecting users to create config files leads to errors; generate them programmatically.",
+    "kind": "pitfall"
+   },
+   {
+    "text": "Include a validation step in the installer to verify that .mcp.json is correctly formatted before proceeding.",
+    "kind": "tip"
+   }
+  ],
+  "libraries": [
+   {
+    "name": "Node.js fs",
+    "version": ">=14"
+   }
+  ],
+  "components": [
+   "hooks",
+   "mcp-server"
+  ]
+ },
+ {
+  "task": "Integrate xAI API key with OpenAI-compatible client",
+  "title": "Invalid xAI API key caused BadRequestError in OpenAI client",
+  "summary": "When testing the xAI key against the OpenAI-compatible API, the request failed with a 400 BadRequestError indicating an incorrect API key. The key format differed from the expected pattern, leading to authentication failure. Verifying the key format and ensuring it matches the required structure resolved the issue. After correcting the key, the API calls succeeded.",
+  "lessons": [
+   {
+    "text": "xAI API keys must follow the exact format required by the OpenAI-compatible endpoint; mismatched formats trigger 400 errors.",
+    "kind": "pitfall"
+   },
+   {
+    "text": "Always validate external API keys before use, preferably with a lightweight test request.",
+    "kind": "tip"
+   }
+  ],
+  "libraries": [
+   {
+    "name": "openai",
+    "version": "1.30.0"
+   }
+  ],
+  "components": [
+   "api",
+   "llm"
+  ]
+ },
+ {
+  "task": "Add FalkorDB service with persistent volume on Railway",
+  "title": "Configuring FalkorDB service and volume via Railway CLI",
+  "summary": "Needed to add a FalkorDB service with a persistent volume on Railway. Using `railway add` with the correct service type and `railway volume add` options ensured the database persisted across deployments. Verifying environment variables for host and port after creation confirmed connectivity.",
+  "lessons": [
+   {
+    "text": "Railway CLI requires explicit service type (e.g., `railway add postgres`) and volume flags; omitting them creates non-persistent services.",
+    "kind": "pitfall"
+   },
+   {
+    "text": "After adding a service, always check the generated env variables for host/port and update your .env files accordingly.",
+    "kind": "tip"
+   }
+  ],
+  "libraries": [],
+  "components": [
+   "deploy",
+   "graph-core"
+  ]
+ },
+ {
+  "task": "Link FalkorDB service with a persistent volume on Railway",
+  "title": "Persisting FalkorDB data via Railway volume attachment",
+  "summary": "Created a FalkorDB service and attached a dedicated volume to ensure data persistence across deployments. Configured the service to use the volume path for its data directory. This prevented data loss when the service restarts or is redeployed.",
+  "lessons": [
+   {
+    "text": "Railway requires explicit volume mounting; forgetting to set the mount point leads to data being stored in a temporary container filesystem.",
+    "kind": "pitfall"
+   },
+   {
+    "text": "Name the volume clearly (e.g., falkordb-data) and reference it in the service's environment variables for easy debugging.",
+    "kind": "tip"
+   }
+  ],
+  "libraries": [],
+  "components": [
+   "deploy",
+   "graph-core"
+  ]
+ },
+ {
+  "task": "Store generated database password and other secrets securely",
+  "title": "Using .env.railway for secret management",
+  "summary": "Generated a random password for FalkorDB and added it, along with other API secrets, to a git\u2011ignored `.env.railway` file. Then set the same values as Railway service variables so the container can read them at runtime. This kept credentials out of source control while making them available to the app.",
+  "lessons": [
+   {
+    "text": "Never commit `.env` files; ensure they are listed in `.gitignore` to avoid leaking secrets.",
+    "kind": "pitfall"
+   },
+   {
+    "text": "After editing `.env.railway`, run `railway variables set` to sync the values with the Railway dashboard.",
+    "kind": "tip"
+   }
+  ],
+  "libraries": [],
+  "components": [
+   "api",
+   "deploy",
+   "graph-core"
+  ]
+ },
+ {
+  "task": "Configure FalkorDB connection for cloud vs local deployment",
+  "title": "Switching FalkorDB host from localhost to Cloud instance",
+  "summary": "The environment variables pointed to a local FalkorDB instance while cloud credentials were present, causing confusion. Updated FALKORDB_HOST and FALKORDB_PORT to the Cloud instance values and ran the test suite against the cloud database to confirm connectivity.",
+  "lessons": [
+   {
+    "text": "Never leave FALKORDB_HOST set to \"localhost\" when cloud credentials are provided; it forces the app to use the wrong database.",
+    "kind": "pitfall"
+   },
+   {
+    "text": "Store sensitive credentials in .env files excluded from git and verify they match the target deployment environment.",
+    "kind": "tip"
+   }
+  ],
+  "libraries": [
+   {
+    "name": "FalkorDB",
+    "version": "2.0.0"
+   }
+  ],
+  "components": [
+   "graph-core"
+  ]
+ },
+ {
+  "task": "Identify correct FalkorDB Cloud host and port for Railway services",
+  "title": "Parsing FalkorDB Cloud endpoint for Railway configuration",
+  "summary": "The provided endpoint contained both a hostname and a node identifier, causing confusion about which part to use as the host. By extracting the primary domain (<host>) and appending the explicit port (58182), the connection succeeded. The node identifier is not needed for the host configuration.",
+  "lessons": [
+   {
+    "text": "Use only the main domain part of the FalkorDB endpoint as the host; ignore secondary node names.",
+    "kind": "tip"
+   },
+   {
+    "text": "Always include the port if the service does not use the default Redis port.",
+    "kind": "tip"
+   }
+  ],
+  "libraries": [],
+  "components": [
+   "deploy",
+   "graph-core"
+  ]
+ },
+ {
+  "task": "Redeploy Railway API and fleet services after moving to a new region",
+  "title": "Upload fresh builds instead of redeploying local uploads when changing regions",
+  "summary": "After moving services to the Singapore region, attempts to redeploy the API and fleet failed because the original builds were uploaded locally and cannot be redeployed across regions. The fix was to create new build artifacts and upload them as fresh builds, then deploy. This resolved the deployment failures and allowed the services to start correctly in the new region.",
+  "lessons": [
+   {
+    "text": "Redeploying a service that was originally uploaded locally will fail after a region change; the platform treats it as a different deployment context.",
+    "kind": "pitfall"
+   },
+   {
+    "text": "Generate and upload new build artifacts when moving services to a new Railway region.",
+    "kind": "tip"
+   }
+  ],
+  "libraries": [],
+  "components": [
+   "api",
+   "deploy",
+   "fleet"
+  ]
+ },
+ {
+  "task": "Deploying Railway app with multiple regions caused deployment failures",
+  "title": "Railway free plan restricts to a single region; remove extra region",
+  "summary": "The Railway free tier only permits one deployment region. Adding Singapore while keeping the default US East (iad) region resulted in a two\u2011region configuration, causing deploy errors. Removing the US region resolved the issue and allowed successful deployment in Singapore.",
+  "lessons": [
+   {
+    "text": "Free plans may enforce hidden limits like a single region; always verify plan constraints before scaling.",
+    "kind": "pitfall"
+   },
+   {
+    "text": "Check the Railway dashboard for attached regions and remove any that are not needed.",
+    "kind": "tip"
+   }
+  ],
+  "libraries": [],
+  "components": [
+   "deploy"
+  ]
+ },
+ {
+  "task": "API worker memory overflow due to multiple processes loading embedding model",
+  "title": "Reduce API workers to stay within 1\u202fGB memory limit",
+  "summary": "Running two API worker processes each loaded the embedding model, exceeding the 1\u202fGB memory cap and causing 502 errors. Switching to a single worker with fewer threads lowered memory usage to ~300\u202fMB and stabilized the service.",
+  "lessons": [
+   {
+    "text": "Embedding models can be memory\u2011heavy; spawning multiple workers can quickly exceed container limits.",
+    "kind": "pitfall"
+   },
+   {
+    "text": "Configure the worker count and thread pool size to fit within the allocated memory budget.",
+    "kind": "tip"
+   }
+  ],
+  "libraries": [],
+  "components": [
+   "api",
+   "deploy"
+  ]
+ },
+ {
+  "task": "Identifying correct FalkorDB host address for external connections",
+  "title": "Use the public endpoint (r-... address) not internal node name",
+  "summary": "The public endpoint `<host>:58182` is the correct host for external API calls. The `node-f-0...` address is an internal node and should not be used for client connections.",
+  "lessons": [
+   {
+    "text": "Cloud services often expose a public DNS name separate from internal node hostnames; using the wrong one leads to connection failures.",
+    "kind": "pitfall"
+   },
+   {
+    "text": "Verify the documentation or service UI for the designated public endpoint before configuring clients.",
+    "kind": "tip"
+   }
+  ],
+  "libraries": [],
+  "components": [
+   "api"
+  ]
+ },
+ {
+  "task": "Implement janitor to clean up stale sessions and sandbox resources",
+  "title": "Janitor for stale sessions and sandbox TTL",
+  "summary": "Added a background job that runs every minute, closing sessions without a heartbeat for 15 minutes and deleting visitor sandboxes older than 3 hours (capped at 40 deletions per run). All tests passed and the job was deployed with the API. Verified that the janitor executed on the live environment.",
+  "lessons": [
+   {
+    "text": "Running the cleanup too frequently caused race conditions with active sessions; using a 1\u2011minute interval with a safe 15\u2011minute heartbeat threshold avoided false positives.",
+    "kind": "pitfall"
+   },
+   {
+    "text": "Limiting sandbox deletions to 40 per run prevented long GC pauses and kept API latency stable.",
+    "kind": "tip"
+   }
+  ],
+  "libraries": [
+   {
+    "name": "node-cron",
+    "version": "3.0.0"
+   }
+  ],
+  "components": [
+   "api",
+   "deploy"
+  ]
+ },
+ {
+  "task": "Parse long transcripts into manageable chunks while preserving tool-call intents and errors",
+  "title": "Chunking transcripts with intent and error preservation",
+  "summary": "Implemented a transcript parser that splits long stretches into segments, counting each segment and ensuring tool-call intents and error messages are retained in the output. This enabled downstream LLM memory extraction to work on bounded input sizes.",
+  "lessons": [
+   {
+    "text": "Na\u00efve splitting on line breaks broke multi\u2011line tool-call payloads; switching to a token\u2011count based splitter preserved logical units.",
+    "kind": "pitfall"
+   },
+   {
+    "text": "Including error objects in the chunk ensures the LLM can infer failure contexts for better memory extraction.",
+    "kind": "tip"
+   }
+  ],
+  "libraries": [
+   {
+    "name": "tiktoken",
+    "version": "0.5.1"
+   }
+  ],
+  "components": [
+   "importer",
+   "llm"
+  ]
+ }
+]
