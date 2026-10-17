@@ -106,6 +106,13 @@ The full graph model is in [`docs/graph-model.md`](docs/graph-model.md), and eve
 (:Notice)-[:AFFECTS]->(:Component)   (:Notice)-[:DELIVERED_TO]->(:Session)   (:Session)-[:OVERLAPS]->(:Session)
 ```
 
+## Deployment
+- **Database:** FalkorDB Cloud, free tier, AWS ap-south-1, plain RESP with a client `socket_timeout` (TLS hangs on the free tier).
+- **API and fleet:** Railway (Singapore, nearest region to the database), one Docker image with two roles (`MYC_ROLE=fleet`).
+- **Web:** Vercel.
+
+The public demo org is read-only for visitors' agent writes. `POST /api/sandbox` gives every visitor a private writable copy.
+
 ## Run it locally
 Requirements: Docker, [uv](https://docs.astral.sh/uv/), Node 20+ (for the web app).
 ```bash
@@ -167,7 +174,7 @@ PYTHONPATH=. uv run python -m core.importer ~/.claude/projects/<project>/<sessio
 - **Identity is trusted:** `MYC_DEV` is configuration, not authentication. Real deployments need SSO.
 - **Routing is a weighted heuristic** (live-on-component > past solver > owner, times PageRank), tuned on our own org.
 - **Embeddings are local and small** (bge-small) for zero-cost setup. Swapping models is a one-line change.
-- **We pinned FalkorDB v4.22.1** (`:latest` on 2026-10-15, the same engine line as FalkorDB Cloud free). We haven't run the suite on the 6.0 Rust engine (`edge-rs`) yet.
+- **FalkorDB versions:** the live demo runs on **FalkorDB Cloud** (free tier, v4.22.0). Locally we pin the Docker image to v4.22.1 (`:latest` on 2026-10-15). The full test suite passes on both. We haven't run it on the 6.0 Rust engine (`edge-rs`) yet.
 
 ## AI disclosure
 We built this with Claude Code, and Grok runs inside the product for fleet answers and transcript extraction. Details are in [`docs/ai-disclosure.md`](docs/ai-disclosure.md).
