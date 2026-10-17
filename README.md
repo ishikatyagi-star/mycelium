@@ -8,7 +8,7 @@ Built for **Graph Hacks: Context for AI Agents** (WeMakeDevs × FalkorDB).
 **Tracks:** 02 Agent Memory & Coordination (primary) · 03 Company Brain
 
 **Links:**
-- Live demo: _(link added at deploy)_
+- Live API: https://api-production-377ba.up.railway.app/api/health (web app link coming)
 - Demo video: _(link)_
 - Blog post: _(link)_
 
