@@ -15,6 +15,13 @@ The web app is how judges *see* this. It must look polished and make the graph v
 - Deploy on Vercel.
 - `NEXT_PUBLIC_API_URL` (default `http://localhost:8000`); demo org `acme`.
 
+## Live API
+`NEXT_PUBLIC_API_URL=https://api-production-377ba.up.railway.app`. This is the deployed public demo, with the fleet of simulated agents running live.
+
+Public mode rules:
+- `GET`s, `/recall`, `/compare`, `/ask` and `/notices` work on `acme` (rate-limited).
+- Agent-identity writes (sessions, saving memory, answers) are reserved for agents. For a "try it yourself" flow, `POST /api/sandbox` returns a private copy of the org (`{org}`) where everything is writable.
+
 ## Data
 - The API contract is `docs/api-contract.md`.
 - Real captured responses are in `docs/mocks/*.json`; SSE samples are in `docs/mocks/events.jsonl`.

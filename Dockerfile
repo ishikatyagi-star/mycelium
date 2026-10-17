@@ -14,4 +14,5 @@ COPY eval ./eval
 # bake the embedding model into the image (no download on cold start)
 RUN python -c "from core.embed import embed; embed('warmup')"
 EXPOSE 8000
-CMD ["sh", "-c", "uvicorn api.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers ${WEB_CONCURRENCY:-2}"]
+# MYC_ROLE=fleet runs the simulated agents instead of the API (same image, separate Railway service)
+CMD ["sh", "-c", "if [ \"$MYC_ROLE\" = fleet ]; then python -m fleet.run --step ${FLEET_STEP:-15} --work-steps ${FLEET_WORK_STEPS:-16}; else uvicorn api.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers ${WEB_CONCURRENCY:-2}; fi"]
