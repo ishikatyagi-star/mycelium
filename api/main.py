@@ -71,6 +71,9 @@ async def guard(request: Request, call_next):
 
 
 def org_for(slug: str, request: Request | None = None, write: bool = False) -> Org:
+    """write=True: agent-identity writes (sessions, memory). In public mode these need the agent token on the
+    shared demo org; visitors write freely in their own sandbox org. Questions and notices are open to
+    visitors (rate-limited) so judges can try the live network."""
     if slug not in list_orgs():
         raise HTTPException(404, f"unknown org {slug!r}")
     if write and slug in PROTECTED_ORGS:
@@ -211,7 +214,7 @@ class AskBody(BaseModel):
 
 @app.post("/api/orgs/{org}/ask")
 def ask(org: str, body: AskBody, request: Request):
-    o = org_for(org, request, write=True)
+    o = org_for(org)
     try:
         return traced(Msg.ask_org(o, body.question, session_id=body.session_id, dev=body.as_dev))
     except ValueError as e:
@@ -355,7 +358,7 @@ class NoticeBody(BaseModel):
 
 @app.post("/api/orgs/{org}/notices")
 def notice(org: str, body: NoticeBody, request: Request):
-    o = org_for(org, request, write=True)
+    o = org_for(org)
     try:
         return traced(Msg.announce_change(o, body.component, body.text, body.kind, body.session_id,
                                           body.as_dev, body.depth))

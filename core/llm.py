@@ -1,5 +1,6 @@
-"""LLM access (xAI Grok via the OpenAI-compatible API). Optional: every caller has a deterministic fallback,
-so the graph features never depend on the LLM being up (and the demo never stalls)."""
+"""LLM access through any OpenAI-compatible API (Groq or xAI, detected from the key prefix).
+Optional: every caller has a deterministic fallback, so the graph features never depend on the LLM
+being up (and the demo never stalls)."""
 from __future__ import annotations
 
 import json
@@ -11,13 +12,28 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+PROVIDERS = {  # key prefix -> (base url, default model)
+    "gsk_": ("https://api.groq.com/openai/v1", "openai/gpt-oss-120b"),
+    "xai-": ("https://api.x.ai/v1", "grok-4-fast-non-reasoning"),
+}
+
+
+def _key() -> str:
+    return os.getenv("LLM_API_KEY") or os.getenv("GROQ_API_KEY") or os.getenv("XAI_API_KEY") or ""
+
+
+def _provider() -> tuple[str, str]:
+    key = _key()
+    base, model = next((v for p, v in PROVIDERS.items() if key.startswith(p)), PROVIDERS["xai-"])
+    return os.getenv("LLM_BASE_URL", base), os.getenv("LLM_MODEL", model)
+
+
 @lru_cache(maxsize=1)
 def _client():
-    key = os.getenv("XAI_API_KEY")
-    if not key:
+    if not _key():
         return None
     from openai import OpenAI
-    return OpenAI(api_key=key, base_url=os.getenv("XAI_BASE_URL", "https://api.x.ai/v1"), timeout=30)
+    return OpenAI(api_key=_key(), base_url=_provider()[0], timeout=30)
 
 
 def available() -> bool:
@@ -29,10 +45,12 @@ def chat(system: str, user: str, max_tokens: int = 500, temperature: float = 0.3
     if c is None:
         return None
     try:
-        r = c.chat.completions.create(model=os.getenv("XAI_MODEL", "grok-4-fast-non-reasoning"),
+        model = _provider()[1]
+        extra = {"reasoning_effort": "low"} if "gpt-oss" in model else {}
+        r = c.chat.completions.create(model=model,
                                       messages=[{"role": "system", "content": system},
                                                 {"role": "user", "content": user}],
-                                      max_tokens=max_tokens, temperature=temperature)
+                                      max_tokens=max_tokens + (600 if extra else 0), temperature=temperature, **extra)
         return (r.choices[0].message.content or "").strip() or None
     except Exception as e:
         print("llm error:", str(e)[:200])
