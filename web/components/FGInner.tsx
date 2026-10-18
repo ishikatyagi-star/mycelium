@@ -20,6 +20,17 @@ export default function FGInner({ fgRef, configure, autoFit = true, onEngineStop
       ref.current.d3ReheatSimulation();
     }
   }, [configure, n]);
+  // a live graph rarely "stops", so also fit shortly after the data changes (unless the user took over)
+  const sizeRef = useRef({ w: props.width, h: props.height, nodes: props.graphData?.nodes || [] });
+  sizeRef.current = { w: props.width, h: props.height, nodes: props.graphData?.nodes || [] };
+  useEffect(() => {
+    if (!autoFit || !n) return;
+    const fit = () => {
+      if (!userMoved.current && ref.current) fitTo(ref.current, sizeRef.current.nodes, sizeRef.current.w, sizeRef.current.h, 70);
+    };
+    const t1 = setTimeout(fit, 1500), t2 = setTimeout(fit, 4500);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [autoFit, n]);
   return (
     <div onWheel={() => (userMoved.current = true)} onPointerDown={() => (userMoved.current = true)}>
     <ForceGraph2D

@@ -164,12 +164,7 @@ export default function LiveOrg() {
     fg.d3Force("charge")?.strength((n: any) => (n.label === "Team" ? -500 : -190));
     fg.d3Force("link")?.distance((l: any) => (l.type === "OWNS" ? 60 : l.type === "TOUCHES" ? 28 : 90));
   }, []);
-  const lastLen = useRef(0);
-  useEffect(() => {
-    if (Math.abs(graph.nodes.length - lastLen.current) > 3)
-      setTimeout(() => fgRef.current && fitTo(fgRef.current, graph.nodes, size.width, size.height, 80), 3500);
-    lastLen.current = graph.nodes.length;
-  }, [graph.nodes.length]);
+
 
   const nodeCount = graph.nodes.filter((n) => n.label === "Session").length;
 
