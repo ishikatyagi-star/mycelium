@@ -8,7 +8,7 @@ import { fitTo } from "./fit";
 import ForceGraph, { useCssVar, useSize } from "./ForceGraph";
 import NoticeModal from "./NoticeModal";
 import { useOrg } from "./OrgProvider";
-import { DevBadge } from "./ui";
+import { DevBadge, PageHeader, Stat } from "./ui";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type FeedItem = { id: number; at: number; kind: string; text: React.ReactNode; color: string };
@@ -94,45 +94,45 @@ export default function LiveOrg() {
     es.onerror = () => setConnected(false);
     const on = (type: string, fn: (d: any) => void) => es.addEventListener(type, (e) => fn(JSON.parse((e as MessageEvent).data)));
     on("session_started", (d) => {
-      push("session", <><DevBadge dev={d.dev} small /> started <i>{d.task}</i></>, "var(--accent-2)");
+      push("session", <><DevBadge dev={d.dev} small /> started <i>{d.task}</i></>, "#0d9488");
       reloadSoon();
     });
     on("session_ended", () => reloadSoon());
     on("overlap", (d) => {
       push("overlap", <><DevBadge dev={d.a.dev} small /> and <DevBadge dev={d.b.dev} small /> are working on the same thing: <i>{d.task}</i></>, "var(--warn)");
-      pulse([`Session:${d.a.session_id}`, `Session:${d.b.session_id}`], "#fbbf24");
-      flow([{ source: `Session:${d.a.session_id}`, target: `Session:${d.b.session_id}`, type: "OVERLAPS", color: "#fbbf24" }]);
+      pulse([`Session:${d.a.session_id}`, `Session:${d.b.session_id}`], "#d97706");
+      flow([{ source: `Session:${d.a.session_id}`, target: `Session:${d.b.session_id}`, type: "OVERLAPS", color: "#d97706" }]);
     });
     on("memory_saved", (d) => push("memory", <><DevBadge dev={d.dev || { name: "?" }} small /> saved memory <b>{d.title}</b></>, "var(--accent)"));
     on("reuse", (d) => {
       push("reuse", <><DevBadge dev={d.by} small /> reused <DevBadge dev={d.author} small />’s <b>{d.title}</b> · ~{tokens(d.tokens_saved)} tokens saved</>, "var(--accent)");
       const s = sessionOf(d.by?.name);
-      if (s) pulse([s], "#34d399");
+      if (s) pulse([s], "#15803d");
     });
     on("question_asked", (d) => {
       askers.current.set(d.question_id, d.asker?.name);
-      push("ask", <><DevBadge dev={d.asker} small /> asked the org: <i>“{d.text}”</i></>, "#e879f9");
+      push("ask", <><DevBadge dev={d.asker} small /> asked the org: <i>“{d.text}”</i></>, "#a21caf");
     });
     on("question_routed", (d) => {
       const asker = askers.current.get(d.question_id);
       const src = sessionOf(asker);
       const dst = d.to.kind === "session" ? `Session:${d.to.id}` : sessionOf(d.to.dev?.name);
-      push("route", <>→ routed to <DevBadge dev={d.to.dev} small /> <span className="text-muted">because {d.reason?.split(";")[0]}</span></>, "#e879f9");
-      if (dst) pulse([dst], "#e879f9", 8000);
-      if (src && dst) flow([{ source: src, target: dst, type: "ASKS", color: "#e879f9" }], 8000);
+      push("route", <>→ routed to <DevBadge dev={d.to.dev} small /> <span className="text-muted">because {d.reason?.split(";")[0]}</span></>, "#a21caf");
+      if (dst) pulse([dst], "#a21caf", 8000);
+      if (src && dst) flow([{ source: src, target: dst, type: "ASKS", color: "#a21caf" }], 8000);
     });
     on("answer", (d) => {
-      push("answer", <><DevBadge dev={d.by} small /> answered: <i>“{d.text}”</i></>, "#e879f9");
+      push("answer", <><DevBadge dev={d.by} small /> answered: <i>“{d.text}”</i></>, "#a21caf");
       const s = sessionOf(d.by?.name);
-      if (s) pulse([s], "#e879f9");
+      if (s) pulse([s], "#a21caf");
     });
     on("notice", (d) => {
       const targets = (d.delivered_to || []).map((x: any) => `Session:${x.session_id}`);
       push("notice", <><DevBadge dev={d.by} small /> changed <b>{d.component}</b>: <i>{d.text}</i> → warned {targets.length} live agent{targets.length === 1 ? "" : "s"}</>, "var(--danger)");
-      pulse([`Component:${d.component}`, ...targets], "#f87171", 8000);
-      flow(targets.map((t: string) => ({ source: `Component:${d.component}`, target: t, type: "NOTICE", color: "#f87171" })), 8000);
+      pulse([`Component:${d.component}`, ...targets], "#dc2626", 8000);
+      flow(targets.map((t: string) => ({ source: `Component:${d.component}`, target: t, type: "NOTICE", color: "#dc2626" })), 8000);
     });
-    on("handoff", (d) => push("handoff", <><DevBadge dev={d.from} small /> handed off <i>{d.task}</i></>, "var(--accent-2)"));
+    on("handoff", (d) => push("handoff", <><DevBadge dev={d.from} small /> handed off <i>{d.task}</i></>, "#0d9488"));
     return () => {
       es.close();
       if (reloadTimer) clearTimeout(reloadTimer);
@@ -172,20 +172,26 @@ export default function LiveOrg() {
 
   const nodeCount = graph.nodes.filter((n) => n.label === "Session").length;
 
+  const c = overview?.counts;
   return (
+    <>
+    <PageHeader title={`${org === "graphhq" ? "Graph HQ" : org}, live`}
+                sub="Every dot is an AI agent working right now. Watch questions and changes move between them."
+                right={c && <div className="flex divide-x divide-line">
+                  <Stat label="agents live" value={c.live_sessions} /><Stat label="memories" value={c.solutions} />
+                  <Stat label="tokens saved" value={tokens(c.tokens_saved)} /></div>} />
     <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-4">
       <div className="card relative overflow-hidden" style={{ minHeight: 640, background: bg }} data-tour="live-graph">
-        <div className="absolute top-3 left-4 z-10 pointer-events-none">
-          <h1 className="text-xl font-semibold">{org === "graphhq" ? "Graph HQ" : org}, live</h1>
-          <p className="text-sm text-muted max-w-md">
-            Teams own components (arrows: <span className="font-mono text-xs">DEPENDS_ON</span>). Glowing dots are AI agents running
-            right now, attached to what they touch. Every interaction below is a FalkorDB query.
-          </p>
+        <div className="absolute top-3 left-4 z-10 pointer-events-none flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted">
+          <span className="inline-flex items-center gap-1.5"><span className="w-3 h-3 rounded-full border-2" style={{ borderColor: "var(--subtle)" }} /> team</span>
+          <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full" style={{ background: "var(--subtle)" }} /> service</span>
+          <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-white border-2" style={{ borderColor: "var(--primary)", boxShadow: "0 0 0 3px color-mix(in srgb, var(--primary) 25%, transparent)" }} /> agent working now</span>
+          <span className="inline-flex items-center gap-1.5">→ depends on</span>
         </div>
         <div className="absolute top-3 right-4 z-10 flex items-center gap-2">
           <span className="chip">
-            <span className="inline-block w-2 h-2 rounded-full" style={{ background: connected ? "var(--ok)" : "var(--danger)" }} />
-            {connected ? "live stream" : "connecting…"}
+            <span className="inline-block w-2 h-2 rounded-full" style={{ background: connected ? "var(--good)" : "var(--bad)" }} />
+            {connected ? "Live" : "Connecting…"}
           </span>
           <button className="btn" onClick={() => fgRef.current && fitTo(fgRef.current, graph.nodes, size.width, size.height, 70)}>Fit</button>
           <button className="btn btn-primary" data-tour="notice" onClick={() => setNoticeOpen(true)}>Announce a change</button>
@@ -194,7 +200,7 @@ export default function LiveOrg() {
           {(overview?.teams || []).map((t) => (
             <span key={t.name} className="chip"><span style={{ width: 8, height: 8, borderRadius: 99, background: teamColor(t.name) }} />{t.name}</span>
           ))}
-          <span className="chip">● {nodeCount} live agents</span>
+          <span className="chip !text-fg font-semibold">{nodeCount} agents live</span>
         </div>
         <div ref={setEl} className="absolute inset-0">
           <ForceGraph
@@ -287,32 +293,32 @@ export default function LiveOrg() {
 
       <aside className="space-y-4 min-w-0">
         <div className="card p-4" data-tour="feed">
-          <h2 className="font-semibold mb-2 flex items-center justify-between">
-            Activity <span className="text-xs text-muted font-normal">real-time event stream</span>
+          <h2 className="font-bold mb-3 flex items-center justify-between">
+            Activity <span className="text-xs text-subtle font-normal">real time</span>
           </h2>
           <div className="space-y-2 max-h-[340px] overflow-auto pr-1">
-            {feed.length === 0 && <div className="text-sm text-muted py-4">Waiting for agents to do something… (the fleet acts every ~15 s)</div>}
+            {feed.length === 0 && <div className="text-sm text-muted py-4">Waiting for the next agent action…</div>}
             {feed.map((f) => (
-              <div key={f.id} className="feed-item text-[13px] leading-relaxed border-l-2 pl-2.5" style={{ borderColor: f.color }}>
+              <div key={f.id} className="feed-item text-sm leading-relaxed border-l-2 pl-3" style={{ borderColor: f.color }}>
                 <div>{f.text}</div>
-                <div className="text-[10px] text-muted">{ago(f.at)}</div>
+                <div className="text-xs text-subtle">{ago(f.at)}</div>
               </div>
             ))}
           </div>
         </div>
         <div className="card p-4">
-          <h2 className="font-semibold mb-2">Live agents <span className="text-muted font-normal text-sm">({live.length})</span></h2>
+          <h2 className="font-bold mb-3">Working now <span className="text-subtle font-normal text-sm">{live.length}</span></h2>
           <div className="space-y-2.5 max-h-[300px] overflow-auto pr-1">
             {live.map((s) => (
-              <div key={s.id} className="text-[13px]">
+              <div key={s.id} className="text-sm">
                 <div className="flex items-center gap-2 flex-wrap">
                   <DevBadge dev={s.dev} small />
-                  <span className="text-[11px] text-muted">{s.agent} · {ago(s.started_at)}</span>
+                  <span className="text-xs text-subtle">{ago(s.started_at)}</span>
                 </div>
                 <div className="mt-0.5">{s.task}</div>
-                <div className="text-[11px] text-muted font-mono">{s.components.join(", ")}</div>
+                <div className="text-xs text-subtle font-mono">{s.components.join(", ")}</div>
                 {s.overlaps.length > 0 && (
-                  <div className="text-[11px]" style={{ color: "var(--warn)" }}>
+                  <div className="text-xs font-medium" style={{ color: "var(--warn)" }}>
                     overlaps with {s.overlaps.map((o) => o.dev.name).join(", ")}
                   </div>
                 )}
@@ -323,5 +329,6 @@ export default function LiveOrg() {
       </aside>
       {noticeOpen && <NoticeModal onClose={() => setNoticeOpen(false)} />}
     </div>
+    </>
   );
 }

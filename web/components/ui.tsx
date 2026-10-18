@@ -7,10 +7,10 @@ import { teamColor } from "@/lib/teams";
 export function DevBadge({ dev, small }: { dev: Dev | { name: string; team?: string }; small?: boolean }) {
   const c = teamColor(dev.team);
   return (
-    <span className="chip" style={{ borderColor: `${c}66`, background: `${c}14`, fontSize: small ? "0.7rem" : undefined }}>
+    <span className="chip" style={{ borderColor: `${c}55`, background: `${c}0d`, fontSize: small ? "0.75rem" : undefined }}>
       <span style={{ width: 7, height: 7, borderRadius: 99, background: c, display: "inline-block" }} />
-      <span className="font-medium">{dev.name}</span>
-      {dev.team && <span className="text-muted">{dev.team}</span>}
+      <span className="font-semibold text-fg">{dev.name}</span>
+      {dev.team && <span className="text-subtle">{dev.team}</span>}
     </span>
   );
 }
@@ -27,7 +27,7 @@ export function CypherTrace({ trace }: { trace?: Trace }) {
     <div className="card overflow-hidden">
       <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between px-4 py-2.5 text-sm">
         <span className="font-medium">
-          <span className="text-accent font-mono mr-2">{"</>"}</span>Show Cypher
+          <span className="text-primary font-mono mr-2">{"</>"}</span>Show Cypher
           <span className="text-muted font-normal ml-2">
             {trace.length} queries · {total.toFixed(0)} ms in FalkorDB
           </span>
@@ -44,9 +44,9 @@ export function CypherTrace({ trace }: { trace?: Trace }) {
                   {t.ms} ms · {t.rows} rows
                 </span>
               </div>
-              <pre className="text-[11.5px] leading-relaxed whitespace-pre-wrap font-mono text-fg/85">{t.cypher}</pre>
+              <pre className="text-xs leading-relaxed whitespace-pre-wrap font-mono text-fg/85">{t.cypher}</pre>
               {Object.keys(t.params || {}).length > 0 && (
-                <pre className="text-[11px] mt-1 text-muted whitespace-pre-wrap font-mono">params {JSON.stringify(t.params)}</pre>
+                <pre className="text-xs mt-1 text-muted whitespace-pre-wrap font-mono">params {JSON.stringify(t.params)}</pre>
               )}
             </div>
           ))}
@@ -74,12 +74,24 @@ export function ErrorNote({ error }: { error: string | null }) {
   return <div className="card px-4 py-3 text-sm" style={{ borderColor: "var(--danger)", color: "var(--danger)" }}>{error}</div>;
 }
 
-export function Stat({ label, value, hint }: { label: string; value: string | number; hint?: string }) {
+export function Stat({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="px-3">
-      <div className="text-lg font-semibold tabular-nums leading-tight">{value}</div>
-      <div className="text-[11px] text-muted uppercase tracking-wide">{label}</div>
-      {hint && <div className="text-[10px] text-muted">{hint}</div>}
+    <div className="px-4 first:pl-0">
+      <div className="text-xl font-bold tabular-nums leading-tight">{value}</div>
+      <div className="text-xs text-subtle">{label}</div>
+    </div>
+  );
+}
+
+/** Every page opens the same way: one title, one sentence. */
+export function PageHeader({ title, sub, right }: { title: string; sub: string; right?: React.ReactNode }) {
+  return (
+    <div className="flex flex-wrap items-end gap-4 mb-6">
+      <div className="max-w-3xl">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{title}</h1>
+        <p className="text-base text-muted mt-1.5">{sub}</p>
+      </div>
+      {right && <div className="ml-auto">{right}</div>}
     </div>
   );
 }

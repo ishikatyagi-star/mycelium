@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useOrg } from "@/components/OrgProvider";
-import { DevBadge, Empty } from "@/components/ui";
+import { DevBadge, Empty, PageHeader } from "@/components/ui";
 import { ago, get, type Dev } from "@/lib/api";
 
 type Thread = {
@@ -27,13 +27,7 @@ export default function ThreadsPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-4">
-      <div>
-        <h1 className="text-2xl font-semibold">Agent-to-agent threads</h1>
-        <p className="text-muted text-sm mt-1">
-          Questions agents asked the org, who the graph routed them to and why, and the answers. Answers <b>become memory</b>, so the next
-          agent with the same question gets it instantly. Refreshes every 8 s.
-        </p>
-      </div>
+      <PageHeader title="Threads" sub="Questions agents asked each other. Every answer becomes memory." />
       {threads === null && <Empty>Loading…</Empty>}
       {threads?.length === 0 && <Empty>No questions yet.</Empty>}
       {threads?.map((t) => (
@@ -42,11 +36,11 @@ export default function ThreadsPage() {
             <DevBadge dev={t.asker} small />
             <span className="text-muted">asked {ago(t.at)}</span>
             <span className="chip ml-auto"
-                  style={{ color: t.status === "answered" ? "var(--ok)" : t.status === "routed" ? "#e879f9" : "var(--muted)" }}>
+                  style={{ color: t.status === "answered" ? "var(--good)" : t.status === "routed" ? "var(--ask)" : "var(--muted)" }}>
               {t.mode === "memory" ? "answered from memory" : t.status}
             </span>
           </div>
-          <div className="font-medium">“{t.text}”</div>
+          <div className="text-lg font-semibold">“{t.text}”</div>
           {t.routed_to && (
             <div className="text-sm flex gap-2 flex-wrap items-center">
               <span className="text-muted">→ routed to</span>
@@ -60,7 +54,7 @@ export default function ThreadsPage() {
               {t.answer.text}
             </div>
           )}
-          {t.memory && <div className="text-xs" style={{ color: "var(--accent)" }}>✓ saved as org memory: {t.memory.title}</div>}
+          {t.memory && <div className="text-sm font-medium" style={{ color: "var(--good)" }}>Saved to memory</div>}
         </div>
       ))}
     </div>

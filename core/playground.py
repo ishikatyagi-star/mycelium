@@ -70,26 +70,24 @@ def staged_recall(org: Org, sid: str) -> dict:
 
     top = results[0] if results else None
     steps = [
-        {"key": "embed", "title": "Understand the problem",
-         "detail": f"The agent's problem is turned into a {DIM}-dimensional vector (bge-small, computed locally).",
+        {"key": "embed", "title": "Read the problem",
+         "detail": f"The problem becomes a {DIM}-number vector.",
          "ms": round(embed_ms, 1), "data": {"query": s["query"]}},
         {"key": "vector", "title": "Find similar past problems",
-         "detail": "FalkorDB's vector index searches every Task any agent in the org has ever worked on, and the same query "
-                   "enforces visibility (private / team / org) through MEMBER_OF.",
+         "detail": "Search every problem any agent here has worked on.",
          "cypher": cand_trace[0]["cypher"] if cand_trace else None, "ms": cand_trace[0]["ms"] if cand_trace else None,
          "data": {"candidates": candidates}},
-        {"key": "walk", "title": "Walk the graph past stale fixes",
-         "detail": "For each candidate, follow SUPERSEDES to the newest fix. Fixes that later broke (FAILED_WITH) are skipped, "
-                   "and their failure becomes a warning.",
+        {"key": "walk", "title": "Skip fixes that broke",
+         "detail": "Follow SUPERSEDES to the newest fix. Broken ones are skipped.",
          "cypher": by_name.get("recall.supersede_walk", {}).get("cypher"), "ms": by_name.get("recall.supersede_walk", {}).get("ms"),
          "data": {"skipped": top["skipped"] if top else []}},
         {"key": "expand", "title": "Bring back the context",
-         "detail": "Attach who solved it, in which project and team, how hard it was, the lessons and dead ends, and what it builds on.",
+         "detail": "Who solved it, where, how hard it was, and what didn't work.",
          "cypher": by_name.get("recall.expand", {}).get("cypher"), "ms": by_name.get("recall.expand", {}).get("ms"),
          "data": {"lessons": top["lessons"] if top else [], "author": top["author"] if top else None,
                   "project": top["project"] if top else None}},
         {"key": "rank", "title": "Rank and credit",
-         "detail": "Score = similarity × status × effort (hard-won first) × proven reuse. The author gets credit when it's reused.",
+         "detail": "Hard-won, proven fixes rank first. The author gets credit.",
          "data": {"score": top["score"] if top else None, "similarity": top["similarity"] if top else None}},
     ]
     scratch = None

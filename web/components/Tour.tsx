@@ -7,28 +7,28 @@ type Step = { path: string; target: string; title: string; body: string };
 
 // The guided story: each step points at the exact place in the product where something happens.
 export const STEPS: Step[] = [
-  { path: "/", target: "hero", title: "The problem in one line",
-    body: "Every engineer at a company now works with an AI agent. Each agent starts blank: it can't see what other agents solved last month, or what they're changing right now." },
-  { path: "/", target: "org", title: "Meet Graph HQ (our demo company)",
-    body: "A fictional 14-person engineering org: 5 teams owning 17 services, with about 4 months of agent history. Everything you'll see is stored as one graph in FalkorDB." },
-  { path: "/playground", target: "scenarios", title: "Engineers whose agents are mid-task",
-    body: "Pick an engineer. Their AI agent has been chatting with them and is about to start fixing something. It doesn't know that someone else at Graph HQ already solved it." },
-  { path: "/playground", target: "chat", title: "The conversation so far",
-    body: "Read the agent's plan. Often it's exactly the fix that already failed for someone else months ago." },
-  { path: "/playground", target: "decision", title: "The decision: from scratch, or ask the org?",
-    body: "Without Mycelium the agent starts from scratch. With Mycelium it checks the org's memory first. Try both: the scratch path replays what it actually cost the first time." },
-  { path: "/playground", target: "pipeline", title: "How the memory is fetched",
-    body: "Step by step: a vector search finds similar past problems, the graph walks past fixes that later broke, brings back who solved it and the dead ends, then ranks and credits. Each step shows the real Cypher query." },
-  { path: "/live", target: "live-graph", title: "The org, live",
-    body: "Teams own services; arrows are DEPENDS_ON. Every glowing dot is an agent running right now, attached to what it touches. Questions travel between agents as particles." },
-  { path: "/live", target: "notice", title: "Change something, see who's affected",
-    body: "Announce a change to a service. Mycelium walks DEPENDS_ON up to 3 hops and warns only the live agents whose work depends on it." },
-  { path: "/live", target: "feed", title: "Agents talking to agents",
-    body: "Agents ask the org; the graph routes each question to whoever is live on the relevant service (or owns it, or solved it before). Answers become memory." },
-  { path: "/compare", target: "compare", title: "Why it has to be a graph",
-    body: "Same question, same vector index. Vector-only hands back the fix that caused the outage; the graph knows it was superseded. Benchmark: 0/12 vs 12/12." },
-  { path: "/brain", target: "experts", title: "The company brain",
-    body: "Who actually knows what (PageRank over who credits whom), which hard-won fixes only one person has ever touched, and how help flows between teams." },
+  { path: "/", target: "hero", title: "The problem",
+    body: "Every engineer now works with an AI agent, and each agent starts blank." },
+  { path: "/", target: "org", title: "Graph HQ, our demo company",
+    body: "14 engineers in 5 teams. Their agents' history lives in one graph in FalkorDB." },
+  { path: "/playground", target: "scenarios", title: "Agents about to repeat work",
+    body: "Each of these agents is about to solve something a teammate already solved." },
+  { path: "/playground", target: "chat", title: "What the agent plans to do",
+    body: "Read its plan. Often it's the exact fix that already failed for someone else." },
+  { path: "/playground", target: "decision", title: "Your choice",
+    body: "Solve from scratch and see what it costs, or ask Mycelium first." },
+  { path: "/playground", target: "pipeline", title: "How the memory is found",
+    body: "Find similar problems, skip fixes that broke, bring back who solved it. Each step is a real query." },
+  { path: "/live", target: "live-graph", title: "The company, live",
+    body: "Each dot is an agent working right now, attached to the services it touches." },
+  { path: "/live", target: "notice", title: "Change something",
+    body: "Mycelium warns only the agents whose work depends on what changed." },
+  { path: "/live", target: "feed", title: "Agents asking agents",
+    body: "Questions go to whoever is working on that service now. Answers become memory." },
+  { path: "/compare", target: "compare", title: "Why it needs a graph",
+    body: "A vector search returns the closest match, even one that already failed. The graph knows it was replaced." },
+  { path: "/brain", target: "experts", title: "Who knows what",
+    body: "See who others rely on, and which hard-won fixes only one person holds." },
 ];
 
 type Ctx = { active: boolean; step: number; start: () => void; stop: () => void; go: (i: number) => void };
@@ -114,17 +114,17 @@ function Overlay() {
       {rect ? (
         <div className="absolute rounded-xl transition-all duration-300"
              style={{ left: rect.left - pad, top: rect.top - pad, width: rect.width + pad * 2, height: rect.height + pad * 2,
-                      boxShadow: "0 0 0 9999px rgba(0,0,0,0.55), 0 0 0 2px var(--accent)" }} />
+                      boxShadow: "0 0 0 9999px rgba(15,23,42,0.45), 0 0 0 3px var(--primary)" }} />
       ) : (
         <div className="absolute inset-0 bg-black/40" />
       )}
       <div className="absolute card p-4 shadow-2xl pointer-events-auto transition-all duration-300"
            style={{ left, top, width: cardW, borderColor: "var(--accent)" }}>
-        <div className="text-[11px] uppercase tracking-wider text-accent font-semibold">Step {step + 1} of {STEPS.length}</div>
-        <h3 className="font-semibold mt-1">{s.title}</h3>
-        <p className="text-sm text-muted mt-1.5 leading-relaxed">{s.body}</p>
+        <div className="eyebrow" style={{ color: "var(--primary)" }}>Step {step + 1} of {STEPS.length}</div>
+        <h3 className="text-lg font-bold mt-1">{s.title}</h3>
+        <p className="text-muted mt-1.5">{s.body}</p>
         <div className="flex items-center justify-between mt-3">
-          <button className="text-xs text-muted hover:text-fg" onClick={stop}>Skip tour</button>
+          <button className="text-sm text-muted hover:text-fg" onClick={stop}>Skip</button>
           <div className="flex gap-2">
             {step > 0 && <button className="btn !py-1 !px-2.5 !text-xs" onClick={() => go(step - 1)}>Back</button>}
             <button className="btn btn-primary !py-1 !px-3 !text-xs" onClick={() => go(step + 1)}>

@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowRight, Compass, Database, GitBranch, Radio, Search } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useOrg } from "@/components/OrgProvider";
@@ -7,193 +8,136 @@ import { useTour } from "@/components/Tour";
 import { get, tokens, type Overview } from "@/lib/api";
 import { teamColor } from "@/lib/teams";
 
-const TEAM_BLURB: Record<string, string> = {
-  Identity: "Login, tokens, user profiles",
-  Payments: "Checkout, webhooks, the ledger",
-  Data: "Event pipeline, warehouse, reporting",
-  Mobile: "The mobile app, push, offline sync",
-  Platform: "CI, Kubernetes, observability",
-};
-
-export default function StoryPage() {
+export default function OverviewPage() {
   const tour = useTour();
   const { setOrg, setPersona } = useOrg();
   const [ov, setOv] = useState<Overview | null>(null);
   useEffect(() => {
     get<Overview>("/api/orgs/graphhq/overview").then(setOv).catch(() => {});
   }, []);
-  const pick = (dev: string) => {
-    setOrg("graphhq");
-    setPersona(dev);
-  };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-16 pb-10">
+    <div className="max-w-5xl mx-auto space-y-20 pb-8">
       {/* hero */}
-      <section className="pt-8 text-center space-y-5" data-tour="hero">
-        <div className="chip mx-auto" style={{ color: "var(--accent)" }}>Graph Hacks 2026 · built on FalkorDB</div>
-        <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-tight max-w-4xl mx-auto">
-          Your company&apos;s AI agents keep re-solving <span style={{ color: "var(--accent)" }}>last quarter&apos;s</span> problems,
-          and can&apos;t see <span style={{ color: "var(--accent-2)" }}>each other</span>.
+      <section className="pt-10 text-center" data-tour="hero">
+        <div className="eyebrow">Shared memory for AI agents · built on FalkorDB</div>
+        <h1 className="mt-4 text-4xl sm:text-6xl font-extrabold tracking-tight leading-[1.08] max-w-4xl mx-auto">
+          Your AI agents keep solving problems your company already solved.
         </h1>
-        <p className="text-lg text-muted max-w-3xl mx-auto">
-          <b className="text-fg">Mycelium</b> connects every AI agent in a company through one shared context graph. Agents recall what
-          anyone solved before, see what other teams are working on right now, and talk to each other&apos;s agents.
+        <p className="mt-5 text-lg sm:text-xl text-muted max-w-2xl mx-auto">
+          Mycelium gives every agent one shared memory, so a problem solved once is never solved twice.
         </p>
-        <div className="flex flex-wrap gap-3 justify-center">
-          <Link href="/playground" className="btn btn-primary !px-5 !py-2.5">Try the playground →</Link>
-          <button className="btn !px-5 !py-2.5" onClick={() => tour.start()}>▶ Take the 2-minute tour</button>
-          <Link href="/live" className="btn !px-5 !py-2.5">Watch the company live</Link>
+        <div className="mt-8 flex flex-wrap gap-3 justify-center">
+          <Link href="/playground" className="btn btn-primary !px-6 !min-h-[48px] !text-base">
+            See it work <ArrowRight size={18} aria-hidden />
+          </Link>
+          <button className="btn !px-6 !min-h-[48px] !text-base" onClick={() => tour.start()}>
+            <Compass size={18} aria-hidden /> 2-minute tour
+          </button>
         </div>
-        {ov && (
-          <div className="flex flex-wrap justify-center gap-6 text-sm text-muted pt-2">
-            <span><b className="text-fg">{ov.counts.live_sessions}</b> agents live right now</span>
-            <span><b className="text-fg">{ov.counts.solutions}</b> memories</span>
-            <span><b className="text-fg">{ov.counts.sessions}</b> agent sessions</span>
-            <span><b className="text-fg">~{tokens(ov.counts.tokens_saved)}</b> tokens saved by reuse</span>
-          </div>
-        )}
       </section>
 
       {/* problem */}
-      <section className="space-y-5">
-        <h2 className="text-2xl font-semibold">The problem: knowledge is split across time and across teams</h2>
-        <div className="grid md:grid-cols-2 gap-4">
-          <div className="card p-5 space-y-3">
-            <div className="text-xs uppercase tracking-wider text-muted">Across time: history repeats</div>
-            <p className="leading-relaxed">
-              Ten weeks ago <b>Yash</b> (Payments) spent <b>3 working days and 14 attempts</b> on a token-refresh race that logged users out.
-              Retrying on 401 made it worse. He found the real fix, and it lives in his chat history.
+      <section>
+        <div className="eyebrow mb-4">The problem</div>
+        <div className="grid md:grid-cols-2 gap-5">
+          <div className="card p-7">
+            <div className="text-5xl font-extrabold tracking-tight" style={{ color: "var(--bad)" }}>3 days</div>
+            <p className="mt-3 text-lg leading-relaxed">
+              Yash spent 3 days fixing a login bug. Ten weeks later, Neha&apos;s agent is about to repeat the fix that <b>already failed</b>.
             </p>
-            <p className="leading-relaxed">
-              Today <b>Neha</b> (Mobile) hits the same bug. Her agent has never heard of Yash&apos;s three days, and proposes the
-              <span style={{ color: "var(--danger)" }}> exact fix that already failed</span>. Nobody updated the docs; nobody remembers.
-            </p>
-            <div className="text-sm text-muted">Cost: the same days, the same ~210k tokens, the same dead ends, again.</div>
+            <p className="mt-2 text-muted">Agents start every session blank.</p>
           </div>
-          <div className="card p-5 space-y-3">
-            <div className="text-xs uppercase tracking-wider text-muted">Across teams: right now, in parallel</div>
-            <p className="leading-relaxed">
-              <b>Meera</b>&apos;s agent (Identity) is rotating the token-signing keys while <b>Tom</b>&apos;s mobile app caches the old ones.
-              <b> Kabir</b>&apos;s agent (Data) renames a field that three other teams parse.
+          <div className="card p-7">
+            <div className="text-5xl font-extrabold tracking-tight" style={{ color: "var(--bad)" }}>0 warning</div>
+            <p className="mt-3 text-lg leading-relaxed">
+              Meera&apos;s agent is rotating the keys Tom&apos;s app depends on. <b>Neither agent knows</b> about the other.
             </p>
-            <p className="leading-relaxed">
-              Every agent is an island: duplicate work goes unnoticed, breaking changes go unannounced, and the agent that has the
-              answer is on another team.
-            </p>
-            <div className="text-sm text-muted">Cost: incidents, duplicated effort, and people interrupting people.</div>
+            <p className="mt-2 text-muted">Agents can&apos;t see each other.</p>
           </div>
-        </div>
-      </section>
-
-      {/* org */}
-      <section className="space-y-5" data-tour="org">
-        <div>
-          <h2 className="text-2xl font-semibold">Meet Graph HQ, our demo company</h2>
-          <p className="text-muted mt-1 max-w-3xl">
-            A fictional engineering org: 14 engineers in 5 teams, owning 17 services that depend on each other, with about 4 months
-            of AI-agent history across 5 projects. Each engineer works with an AI coding agent. Click anyone to see their agent in the playground.
-          </p>
-        </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-3">
-          {(ov?.teams || []).map((t) => (
-            <div key={t.name} className="card p-4 space-y-3" style={{ borderTop: `3px solid ${teamColor(t.name)}` }}>
-              <div>
-                <div className="font-semibold" style={{ color: teamColor(t.name) }}>{t.name}</div>
-                <div className="text-xs text-muted">{TEAM_BLURB[t.name]}</div>
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {t.devs.map((d) => (
-                  <Link key={d} href="/playground" onClick={() => pick(d)} className="chip hover:border-accent">
-                    <span className="w-5 h-5 rounded-full grid place-items-center text-[10px] font-semibold text-black"
-                          style={{ background: teamColor(t.name) }}>{d[0]}</span>{d}
-                  </Link>
-                ))}
-              </div>
-              <div className="text-[11px] font-mono text-muted leading-relaxed">{t.components.join(" · ")}</div>
-            </div>
-          ))}
         </div>
       </section>
 
       {/* how */}
-      <section className="space-y-5">
-        <h2 className="text-2xl font-semibold">How Mycelium solves it</h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <section>
+        <div className="eyebrow mb-4">How Mycelium fixes it</div>
+        <div className="grid md:grid-cols-3 gap-5">
           {[
-            ["1", "Every agent session becomes a node", "When an engineer's agent starts a task, Mycelium records it in the graph: who, which team, which services it touches, which project. That one node is both memory and presence.", "/live", "See live agents"],
-            ["2", "Before solving: ask the org's memory", "A vector search finds similar past problems; the graph then walks past fixes that later broke, brings back the dead ends, ranks hard-won fixes first and credits the author.", "/playground", "Try it in the playground"],
-            ["3", "While working: agents coordinate", "Overlapping work is detected across teams. Questions are routed to whoever is live on the relevant service. Changes ripple over DEPENDS_ON to exactly the agents affected.", "/live", "Announce a change"],
-            ["4", "Knowledge compounds", "Answers become memory. Fixes build on fixes across projects. PageRank shows who really knows what, and which hard-won knowledge only one person holds.", "/brain", "Open the company brain"],
-          ].map(([n, title, body, href, cta]) => (
-            <div key={n} className="card p-5 flex flex-col gap-3">
-              <div className="w-8 h-8 rounded-full grid place-items-center font-semibold text-black" style={{ background: "var(--accent)" }}>{n}</div>
-              <div className="font-semibold">{title}</div>
-              <p className="text-sm text-muted leading-relaxed flex-1">{body}</p>
-              <Link href={href} className="text-sm" style={{ color: "var(--accent)" }}>{cta} →</Link>
-            </div>
+            { icon: Database, title: "Remember", body: "Every agent session, fix and dead end goes into one graph.", href: "/live", cta: "Live org" },
+            { icon: Search, title: "Recall", body: "Before solving, an agent checks what the company already knows, skipping fixes that broke.", href: "/playground", cta: "Playground" },
+            { icon: Radio, title: "Coordinate", body: "Questions and breaking changes reach exactly the agents they affect.", href: "/live", cta: "Live org" },
+          ].map(({ icon: Icon, title, body, href, cta }) => (
+            <Link key={title} href={href} className="card p-6 group hover:border-[var(--primary)] transition-colors">
+              <div className="w-10 h-10 rounded-xl grid place-items-center" style={{ background: "var(--primary-soft)", color: "var(--primary)" }}>
+                <Icon size={20} aria-hidden />
+              </div>
+              <h3 className="mt-4 text-lg font-bold">{title}</h3>
+              <p className="mt-1.5 text-muted">{body}</p>
+              <div className="mt-4 text-sm font-semibold flex items-center gap-1" style={{ color: "var(--primary)" }}>
+                {cta} <ArrowRight size={14} className="transition-transform group-hover:translate-x-0.5" aria-hidden />
+              </div>
+            </Link>
           ))}
         </div>
-        <div className="card p-4 text-sm text-muted">
-          It works inside the tools engineers already use: an <b className="text-fg">MCP server</b> plus <b className="text-fg">Claude Code hooks</b>
-          inject relevant memories, questions for you and change warnings straight into the agent&apos;s context.
-        </div>
+        <Link href="/compare" className="mt-5 card px-6 py-4 flex items-center gap-3 hover:border-[var(--primary)] transition-colors">
+          <GitBranch size={20} style={{ color: "var(--primary)" }} aria-hidden />
+          <span className="font-semibold">Why a graph?</span>
+          <span className="text-muted">A vector search finds look-alikes. Only a graph knows a fix was replaced.</span>
+          <ArrowRight size={16} className="ml-auto text-subtle" aria-hidden />
+        </Link>
       </section>
 
-      {/* why graph */}
-      <section className="space-y-5">
-        <h2 className="text-2xl font-semibold">Why it has to be a graph</h2>
-        <div className="card overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-surface-2 text-left">
-              <tr><th className="p-3">The agent needs to know…</th><th className="p-3">A vector store</th><th className="p-3">Mycelium on FalkorDB</th></tr>
-            </thead>
-            <tbody>
-              {[
-                ["Has anyone solved this before?", "✓ finds similar text", "✓ vector index on every past task"],
-                ["…and is that fix still good?", "✗ returns the broken one", "✓ walks SUPERSEDES past failures"],
-                ["What did they try that didn't work?", "✗", "✓ dead-end lessons linked to the fix"],
-                ["Who is working on this right now?", "✗", "✓ live sessions TOUCHES services"],
-                ["Who breaks if I change this service?", "✗", "✓ DEPENDS_ON up to 3 hops → live agents"],
-                ["Who really knows this area?", "✗", "✓ PageRank over who credits whom"],
-              ].map(([q, v, g]) => (
-                <tr key={q} className="border-t border-line">
-                  <td className="p-3">{q}</td>
-                  <td className="p-3" style={{ color: v.startsWith("✗") ? "var(--danger)" : undefined }}>{v}</td>
-                  <td className="p-3" style={{ color: "var(--accent)" }}>{g}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* org */}
+      <section data-tour="org">
+        <div className="flex flex-wrap items-end gap-3 mb-4">
+          <div>
+            <div className="eyebrow">Meet the demo company</div>
+            <h2 className="text-2xl font-bold mt-1">Graph HQ</h2>
+          </div>
+          <p className="text-muted sm:ml-4">14 engineers, 5 teams, 17 services, 4 months of agent history. Pick someone to see their agent.</p>
+        </div>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          {(ov?.teams || []).map((t) => (
+            <div key={t.name} className="card p-4">
+              <div className="font-bold" style={{ color: teamColor(t.name) }}>{t.name}</div>
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {t.devs.map((d) => (
+                  <Link key={d} href="/playground" onClick={() => { setOrg("graphhq"); setPersona(d); }}
+                        className="chip hover:border-[var(--primary)] !text-fg">
+                    <span className="w-5 h-5 rounded-full grid place-items-center text-[11px] font-bold text-white"
+                          style={{ background: teamColor(t.name) }}>{d[0]}</span>{d}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
       {/* proof */}
-      <section className="space-y-5">
-        <h2 className="text-2xl font-semibold">Proof, not promises</h2>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <section>
+        <div className="eyebrow mb-4">Measured, not claimed</div>
+        <div className="card grid grid-cols-2 lg:grid-cols-4 divide-x divide-y lg:divide-y-0 divide-line">
           {[
-            ["12/12 vs 0/12", "Stale-fix trap: Mycelium returns the current fix; vector-only returns the broken one every time."],
-            ["8/8 vs 4/8", "Questions routed to the right person, who is live on the relevant service right now."],
-            ["1.0 / 1.0", "Precision / recall of which live agents get warned when a service changes."],
-            ["50 agents, 0 errors", "Concurrent agents running the full loop against one graph; hybrid recall ~3 ms p50."],
-          ].map(([big, small]) => (
-            <div key={big} className="card p-5">
-              <div className="text-2xl font-semibold" style={{ color: "var(--accent)" }}>{big}</div>
-              <div className="text-sm text-muted mt-2">{small}</div>
+            ["12 / 12", "returns the current fix", "vector-only: 0 / 12"],
+            ["8 / 8", "questions reach the right person", "vector-only: 4 / 8"],
+            ["100%", "of affected agents warned of a change", "and nobody else"],
+            ["50 agents", "running at once, 0 errors", `${ov ? `~${tokens(ov.counts.tokens_saved)}` : "…"} tokens saved so far`],
+          ].map(([big, label, sub]) => (
+            <div key={big} className="p-6">
+              <div className="text-3xl font-extrabold tracking-tight" style={{ color: "var(--primary)" }}>{big}</div>
+              <div className="mt-1 font-medium">{label}</div>
+              <div className="text-sm text-subtle">{sub}</div>
             </div>
           ))}
         </div>
-        <p className="text-xs text-muted">Benchmark on our synthetic org; cases and caveats in the repo&apos;s eval/results.md.</p>
       </section>
 
-      <section className="card p-8 text-center space-y-4">
-        <h2 className="text-2xl font-semibold">See it for yourself</h2>
-        <p className="text-muted">Pick an engineer, read their agent&apos;s chat, and watch Mycelium fetch the memory of a past agent.</p>
-        <div className="flex flex-wrap gap-3 justify-center">
-          <Link href="/playground" className="btn btn-primary !px-5 !py-2.5">Open the playground →</Link>
-          <button className="btn !px-5 !py-2.5" onClick={() => tour.start()}>▶ Take the tour</button>
-        </div>
+      <section className="text-center">
+        <h2 className="text-3xl font-bold">Watch an agent ask before it solves.</h2>
+        <Link href="/playground" className="btn btn-primary !px-6 !min-h-[48px] !text-base mt-6">
+          Open the playground <ArrowRight size={18} aria-hidden />
+        </Link>
       </section>
     </div>
   );

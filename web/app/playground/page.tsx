@@ -1,8 +1,9 @@
 "use client";
 
+import { AlertTriangle, Check, Folder, Network, Wrench } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useOrg } from "@/components/OrgProvider";
-import { DevBadge, ErrorNote, Spinner } from "@/components/ui";
+import { DevBadge, ErrorNote, PageHeader, Spinner } from "@/components/ui";
 import { ago, effort, get, post, tokens, type Dev, type Memory } from "@/lib/api";
 import { teamColor } from "@/lib/teams";
 
@@ -106,10 +107,9 @@ export default function PlaygroundPage() {
         const dead = [...m.skipped.map((k) => `“${k.title}” ${k.reason}`), ...m.lessons.filter((l) => l.kind === "dead_end").map((l) => l.text)];
         setExtra((e) => [...e, {
           role: "agent", kind: "found",
-          text: `Found it in org memory. **${m.author.name}** (${m.author.team}) solved this in **${m.project?.name ?? "another project"}**, ${ago(m.solution.created_at)}: **${m.solution.title}**.\n\n`
-            + `That took ${effort(m.solution.effort_minutes, m.solution.attempts)} the first time.`
-            + (dead.length ? `\n\nIt also tells me what NOT to do:\n${dead.map((d) => `• ${d}`).join("\n")}` : "")
-            + `\n\nWant me to implement it here?`,
+          text: `**${m.author.name}** (${m.author.team}) already solved this, ${ago(m.solution.created_at)}: **${m.solution.title}**. It took them ${effort(m.solution.effort_minutes, m.solution.attempts)}.`
+            + (dead.length ? `\n\nWhat not to do:\n${dead.slice(0, 3).map((d) => `• ${d}`).join("\n")}` : "")
+            + `\n\nImplement it?`,
         }]);
       } else {
         setExtra((e) => [...e, { role: "agent", text: "Nothing in the org's memory matches this. I'll solve it, and save what I learn so the next agent doesn't have to." }]);
@@ -142,13 +142,13 @@ export default function PlaygroundPage() {
           await sleep(90);
           setSpent((p) => ({ tokens: p.tokens + perTok / 10, minutes: p.minutes + perMin / 10 }));
         }
-        setExtra((e) => [...e, { role: "agent", kind: "fail", text: "✗ Didn't work. Investigating further…" }]);
+        setExtra((e) => [...e, { role: "agent", kind: "fail", text: "Didn't work. Trying something else…" }]);
         await sleep(500);
       }
       setSpent({ tokens: sc.tokens, minutes: sc.effort_minutes });
       setExtra((e) => [...e, {
         role: "system",
-        text: `…and ${Math.max(0, sc.attempts - attempts.length)} more attempts later it gets there. This is what the same problem cost **${sc.author.name}** (${sc.author.team}) the first time: **${effort(sc.effort_minutes, sc.attempts)}, ~${tokens(sc.tokens)} tokens**. The answer was already in the org's memory.`,
+        text: `${Math.max(0, sc.attempts - attempts.length)} more attempts later, it works. That's what this cost **${sc.author.name}** the first time: **${effort(sc.effort_minutes, sc.attempts)}, ~${tokens(sc.tokens)} tokens**. The answer was already in memory.`,
       }]);
     } catch (e) {
       setErr((e as Error).message);
@@ -176,19 +176,12 @@ export default function PlaygroundPage() {
 
   return (
     <div className="space-y-4">
-      <div className="max-w-4xl">
-        <h1 className="text-2xl font-semibold">Playground: what happens when an agent asks the org first</h1>
-        <p className="text-muted text-sm mt-1">
-          These Graph HQ engineers have AI agents mid-conversation, each about to work on a problem someone else at the company already
-          solved, sometimes after days of trial and error. Pick one, read the chat, then decide: let the agent start from scratch, or let
-          Mycelium fetch the memory of the agent that solved it before.
-        </p>
-      </div>
+      <PageHeader title="Playground" sub="Each agent below is about to solve something Graph HQ already solved. Pick one and decide." />
       <ErrorNote error={err} />
       <div className="grid grid-cols-1 lg:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[260px_minmax(0,1fr)_440px] gap-4 items-start">
         {/* engineers */}
         <aside className="card p-2 space-y-1" data-tour="scenarios">
-          <div className="text-xs text-muted uppercase tracking-wider px-2 pt-1 pb-2">Agents waiting on a decision</div>
+          <div className="eyebrow px-2 pt-1 pb-2">Agents waiting</div>
           {!list && <Spinner label="Loading Graph HQ…" />}
           {list?.map((x) => (
             <button key={x.session_id} onClick={() => reset(x.session_id)}
@@ -219,13 +212,13 @@ export default function PlaygroundPage() {
                 {[...s.transcript.map((t) => ({ ...t } as Msg)), ...extra].map((t, i) => (
                   <div key={i} className={`flex ${t.role === "user" ? "justify-end" : "justify-start"}`}>
                     <div className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm ${
-                      t.role === "user" ? "bg-surface-2" : t.role === "system" ? "border border-dashed border-line text-muted" :
-                      t.kind === "found" || t.kind === "impl" ? "border" : t.kind === "fail" ? "" : "bg-bg border border-line"}`}
-                         style={t.kind === "found" || t.kind === "impl" ? { borderColor: "var(--accent)", background: "color-mix(in srgb, var(--accent) 8%, transparent)" }
+                      t.role === "user" ? "bg-[var(--primary-soft)]" : t.role === "system" ? "border border-dashed border-[var(--border-strong)] text-muted" :
+                      t.kind === "found" || t.kind === "impl" ? "border" : t.kind === "fail" ? "" : "bg-surface border border-line"}`}
+                         style={t.kind === "found" || t.kind === "impl" ? { borderColor: "var(--good)", background: "var(--good-soft)" }
                            : t.kind === "fail" ? { color: "var(--danger)" } : undefined}>
-                      <div className="text-[10px] uppercase tracking-wider text-muted mb-1">
+                      <div className="text-xs font-semibold text-subtle mb-1">
                         {t.role === "user" ? s.dev.name : t.role === "system" ? "Mycelium" : `${s.dev.name}'s agent`}
-                        {t.kind === "found" && " · using Mycelium"}
+                        {t.kind === "found" && " · via Mycelium"}
                       </div>
                       <Markdown text={t.text} />
                     </div>
@@ -236,31 +229,30 @@ export default function PlaygroundPage() {
               <div className="border-t border-line p-4 space-y-3" data-tour="decision">
                 {mode === null && (
                   <>
-                    <div className="rounded-xl px-3 py-2 text-sm" style={{ background: "color-mix(in srgb, var(--warn) 12%, transparent)" }}>
-                      <b>Mycelium noticed:</b> this looks like something the org may have solved before.
-                      {lastAgent && <span className="text-muted"> The agent&apos;s current plan: “{lastAgent.slice(0, 140)}{lastAgent.length > 140 ? "…" : ""}”</span>}
+                    <div className="rounded-xl px-4 py-3 flex items-center gap-2 font-medium" style={{ background: "var(--warn-soft)", color: "var(--warn)" }}>
+                      <AlertTriangle size={18} aria-hidden /> Someone at Graph HQ may have solved this before.
                     </div>
                     <div className="grid sm:grid-cols-2 gap-2">
-                      <button className="btn justify-center !py-3" onClick={fromScratch}>🛠 Let the agent solve it from scratch</button>
-                      <button className="btn btn-primary justify-center !py-3" onClick={askMemory}>🍄 Ask Mycelium first (org memory)</button>
+                      <button className="btn justify-center !min-h-[48px]" onClick={fromScratch}><Wrench size={17} aria-hidden /> Solve from scratch</button>
+                      <button className="btn btn-primary justify-center !min-h-[48px]" onClick={askMemory}><Network size={17} aria-hidden /> Ask Mycelium first</button>
                     </div>
                   </>
                 )}
                 {mode === "scratch" && (
                   <div className="flex items-center gap-3 flex-wrap text-sm">
-                    <span className="chip" style={{ color: "var(--danger)" }}>tokens burned ~{tokens(spent.tokens)}</span>
-                    <span className="chip" style={{ color: "var(--danger)" }}>time {effort(Math.round(spent.minutes))}</span>
-                    {!busy && <button className="btn btn-primary ml-auto" onClick={() => { setExtra([]); askMemory(); }}>🍄 Now try: Ask Mycelium first</button>}
+                    <span className="font-bold tabular-nums" style={{ color: "var(--bad)" }}>~{tokens(spent.tokens)} tokens</span>
+                    <span className="font-bold tabular-nums" style={{ color: "var(--bad)" }}>{effort(Math.round(spent.minutes))}</span>
+                    {!busy && <button className="btn btn-primary ml-auto" onClick={() => { setExtra([]); askMemory(); }}><Network size={16} aria-hidden /> Now ask Mycelium first</button>}
                   </div>
                 )}
                 {mode === "memory" && !busy && m && !extra.some((x) => x.kind === "impl") && (
                   <div className="flex gap-2 flex-wrap">
-                    <button className="btn btn-primary" onClick={implement}>✓ Implement this</button>
+                    <button className="btn btn-primary" onClick={implement}><Check size={16} aria-hidden /> Implement this</button>
                     <button className="btn" onClick={() => s && reset(s.session_id)}>Start over</button>
                   </div>
                 )}
                 {mode === "memory" && !busy && extra.some((x) => x.kind === "impl") && (
-                  <div className="text-sm text-muted">Done. In real use the agent would now apply this, credit {m?.author.name} and report the outcome. <button className="underline" onClick={() => s && reset(s.session_id)}>Start over</button></div>
+                  <div className="text-sm text-muted">Done. {m?.author.name} gets the credit. <button className="underline font-medium" onClick={() => s && reset(s.session_id)}>Start over</button></div>
                 )}
               </div>
             </>
@@ -270,8 +262,8 @@ export default function PlaygroundPage() {
         {/* pipeline */}
         <section className="card p-4 space-y-4 lg:col-span-2 xl:col-span-1" data-tour="pipeline">
           <div>
-            <h2 className="font-semibold">How the memory is fetched</h2>
-            <p className="text-xs text-muted">Each step is a real query against Graph HQ&apos;s graph in FalkorDB.</p>
+            <h2 className="font-bold">How the memory is found</h2>
+            <p className="text-sm text-muted">Each step is a real FalkorDB query.</p>
           </div>
           {mode !== "memory" ? (
             <div className="text-sm text-muted space-y-3">
@@ -279,12 +271,12 @@ export default function PlaygroundPage() {
                 <ScratchCompare scratch={staged.scratch} />
               ) : (
                 <>
-                  <p>Click <b className="text-fg">Ask Mycelium first</b> and watch the agent&apos;s question travel through the graph:</p>
-                  <ol className="list-decimal ml-5 space-y-1">
-                    <li>vector search over every past problem in the org</li>
-                    <li>graph walk past fixes that later broke</li>
-                    <li>bring back who, where, how hard, and the dead ends</li>
-                    <li>rank, credit, and hand the fix to the agent</li>
+                  <ol className="space-y-2.5">
+                    {["Find similar past problems", "Skip fixes that later broke", "Bring back who solved it, and the dead ends", "Hand the fix to the agent, with credit"].map((t, i) => (
+                      <li key={t} className="flex items-center gap-3 text-fg">
+                        <span className="w-6 h-6 rounded-full grid place-items-center text-xs font-bold shrink-0" style={{ background: "var(--primary-soft)", color: "var(--primary)" }}>{i + 1}</span>{t}
+                      </li>
+                    ))}
                   </ol>
                 </>
               )}
@@ -310,9 +302,9 @@ export default function PlaygroundPage() {
 function MemoryPath({ s, m, at }: { s: Scenario | null; m: Memory | null; at: number }) {
   const nodes: { label: string; sub: string; color: string; show: number; bad?: boolean }[] = [
     { label: `${s?.dev.name}'s problem`, sub: s?.dev.team || "", color: teamColor(s?.dev.team), show: 0 },
-    { label: "Similar past task", sub: m ? `similarity ${m.similarity.toFixed(2)}` : "", color: "#94a3b8", show: 1 },
-    ...(m?.skipped.length ? [{ label: "Stale fix ✕", sub: "superseded, skipped", color: "#f87171", show: 2, bad: true }] : []),
-    { label: "Current fix ✓", sub: m ? effort(m.solution.effort_minutes, m.solution.attempts) : "", color: "#34d399", show: 2 },
+    { label: "Similar past task", sub: m ? `similarity ${m.similarity.toFixed(2)}` : "", color: "#64748b", show: 1 },
+    ...(m?.skipped.length ? [{ label: "Stale fix", sub: "skipped", color: "#dc2626", show: 2, bad: true }] : []),
+    { label: "Current fix", sub: m ? effort(m.solution.effort_minutes, m.solution.attempts) : "", color: "#15803d", show: 2 },
     { label: m ? m.author.name : "Author", sub: m ? `${m.author.team} · ${m.project?.name ?? ""}` : "", color: teamColor(m?.author.team), show: 3 },
   ];
   return (
@@ -326,8 +318,8 @@ function MemoryPath({ s, m, at }: { s: Scenario | null; m: Memory | null; at: nu
               <div className="rounded-lg px-2 py-1.5 text-center transition-all duration-500 border"
                    style={{ borderColor: on ? n.color : "var(--border)", opacity: on ? 1 : 0.35, transform: on ? "scale(1)" : "scale(0.95)",
                             textDecoration: n.bad && on ? "line-through" : undefined }}>
-                <div className="text-[11px] font-semibold whitespace-nowrap" style={{ color: on ? n.color : undefined }}>{n.label}</div>
-                <div className="text-[10px] text-muted whitespace-nowrap">{n.sub}</div>
+                <div className="text-xs font-bold whitespace-nowrap" style={{ color: on ? n.color : undefined }}>{n.label}</div>
+                <div className="text-xs text-subtle whitespace-nowrap">{n.sub}</div>
               </div>
             </div>
           );
@@ -348,9 +340,9 @@ function StepCard({ step, index, state }: { step: Step; index: number; state: "p
          style={{ borderColor: state === "running" ? "var(--accent)" : "var(--border)" }}>
       <div className="flex items-center gap-2">
         {state === "running" ? <span className="inline-block w-3 h-3 rounded-full border-2 border-accent border-t-transparent animate-spin" />
-          : <span style={{ color: "var(--accent)" }}>✓</span>}
+          : <Check size={16} style={{ color: "var(--good)" }} aria-hidden />}
         <span className="font-medium">{index + 1}. {step.title}</span>
-        {step.ms != null && <span className="ml-auto text-[11px] text-muted font-mono">{step.ms} ms</span>}
+        {step.ms != null && <span className="ml-auto text-xs text-subtle font-mono">{step.ms} ms</span>}
       </div>
       <p className="text-xs text-muted">{step.detail}</p>
       {step.key === "vector" && d.candidates && (
@@ -359,7 +351,7 @@ function StepCard({ step, index, state }: { step: Step; index: number; state: "p
             <div key={c.solution_id} className="text-xs">
               <div className="flex justify-between gap-2">
                 <span className="truncate" style={{ color: c.status !== "active" ? "var(--danger)" : undefined }}>
-                  {c.status !== "active" && "⚠ "}{c.title}
+                  {c.status !== "active" && <AlertTriangle size={12} className="inline mr-1" aria-hidden />}{c.title}
                 </span>
                 <span className="font-mono text-muted shrink-0">{c.similarity.toFixed(2)}</span>
               </div>
@@ -381,11 +373,11 @@ function StepCard({ step, index, state }: { step: Step; index: number; state: "p
       {step.key === "expand" && d.author && (
         <div className="space-y-1.5">
           <div className="flex items-center gap-2 flex-wrap text-xs">
-            <DevBadge dev={d.author} small /> {d.project && <span className="chip">📁 {d.project.name}</span>}
+            <DevBadge dev={d.author} small /> {d.project && <span className="chip"><Folder size={12} aria-hidden /> {d.project.name}</span>}
           </div>
           {d.lessons?.slice(0, 4).map((l: { text: string; kind: string }, i: number) => (
             <div key={i} className="text-xs flex gap-2">
-              <span className="uppercase font-semibold text-[9px] mt-0.5 w-12 shrink-0"
+              <span className="uppercase font-bold text-[11px] mt-0.5 w-16 shrink-0"
                     style={{ color: l.kind === "dead_end" ? "var(--danger)" : l.kind === "pitfall" ? "var(--warn)" : "var(--ok)" }}>
                 {l.kind.replace("_", " ")}
               </span>
@@ -399,10 +391,10 @@ function StepCard({ step, index, state }: { step: Step; index: number; state: "p
       )}
       {step.cypher && (
         <div>
-          <button className="text-[11px] font-mono" style={{ color: "var(--accent)" }} onClick={() => setOpen(!open)}>
+          <button className="text-xs font-semibold font-mono" style={{ color: "var(--primary)" }} onClick={() => setOpen(!open)}>
             {open ? "hide" : "show"} Cypher
           </button>
-          {open && <pre className="text-[10.5px] font-mono whitespace-pre-wrap text-muted mt-1">{step.cypher}</pre>}
+          {open && <pre className="text-xs font-mono whitespace-pre-wrap text-muted mt-1">{step.cypher}</pre>}
         </div>
       )}
     </div>
@@ -413,16 +405,16 @@ function ScratchCompare({ scratch, withMemory }: { scratch: NonNullable<Staged["
   return (
     <div className="grid grid-cols-2 gap-2 text-sm">
       <div className="rounded-xl border p-3" style={{ borderColor: "var(--danger)" }}>
-        <div className="text-[11px] uppercase tracking-wider text-muted">From scratch</div>
-        <div className="font-semibold mt-1" style={{ color: "var(--danger)" }}>{effort(scratch.effort_minutes, scratch.attempts)}</div>
-        <div className="text-xs text-muted">~{tokens(scratch.tokens)} tokens · {scratch.dead_ends.length} known dead ends re-explored</div>
-        <div className="text-[11px] text-muted mt-1">what it cost {scratch.author.name} the first time</div>
+        <div className="eyebrow">From scratch</div>
+        <div className="font-bold text-lg mt-1" style={{ color: "var(--bad)" }}>{effort(scratch.effort_minutes, scratch.attempts)}</div>
+        <div className="text-xs text-muted">~{tokens(scratch.tokens)} tokens, {scratch.dead_ends.length} dead ends repeated</div>
+        <div className="text-xs text-subtle mt-1">what it cost {scratch.author.name} the first time</div>
       </div>
-      <div className="rounded-xl border p-3" style={{ borderColor: "var(--accent)", opacity: withMemory ? 1 : 0.6 }}>
-        <div className="text-[11px] uppercase tracking-wider text-muted">With Mycelium</div>
-        <div className="font-semibold mt-1" style={{ color: "var(--accent)" }}>~1 second · 0 dead ends</div>
-        <div className="text-xs text-muted">a few hundred ms of graph queries, plus the fix, credited</div>
-        <div className="text-[11px] text-muted mt-1">~{tokens(Math.round(scratch.tokens * 0.8))} tokens saved (est.)</div>
+      <div className="rounded-xl border p-3" style={{ borderColor: "var(--good)", opacity: withMemory ? 1 : 0.6 }}>
+        <div className="eyebrow">With Mycelium</div>
+        <div className="font-bold text-lg mt-1" style={{ color: "var(--good)" }}>~1 second</div>
+        <div className="text-xs text-muted">0 dead ends, fix credited</div>
+        <div className="text-xs text-subtle mt-1">~{tokens(Math.round(scratch.tokens * 0.8))} tokens saved (est.)</div>
       </div>
     </div>
   );

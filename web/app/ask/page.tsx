@@ -4,7 +4,7 @@ import { useState } from "react";
 import MemoryCard from "@/components/MemoryCard";
 import { useOrg } from "@/components/OrgProvider";
 import PathGraph from "@/components/PathGraph";
-import { CypherTrace, DevBadge, Empty, ErrorNote, Spinner } from "@/components/ui";
+import { CypherTrace, DevBadge, Empty, ErrorNote, PageHeader, Spinner } from "@/components/ui";
 import { post, type Dev, type Memory, type Path, type Trace } from "@/lib/api";
 
 type AskRes = {
@@ -74,20 +74,13 @@ export default function AskPage() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-5">
-      <div>
-        <h1 className="text-2xl font-semibold">Ask the org</h1>
-        <p className="text-muted text-sm mt-1">
-          You are {me ? <DevBadge dev={me} small /> : persona}. <b>Recall</b> searches everything the org has solved, across teams,
-          projects and months, and lets the graph fix up the result. <b>Ask the org</b> answers from memory if it can, otherwise routes your
-          question to the agent most likely to know <i>right now</i>.
-        </p>
-      </div>
+      <PageHeader title="Ask the org" sub="Search everything the company has solved, or ask a question and let the graph find who knows." />
 
       <div className="card p-4 space-y-3">
         <div className="flex gap-1 p-1 bg-surface-2 rounded-xl w-fit text-sm">
           {(["recall", "ask"] as const).map((m) => (
             <button key={m} onClick={() => setMode(m)} className={`px-3 py-1.5 rounded-lg ${mode === m ? "bg-surface font-medium shadow-sm" : "text-muted"}`}>
-              {m === "recall" ? "Recall memory" : "Ask the org (agents)"}
+              {m === "recall" ? "Search memory" : "Ask a person or agent"}
             </button>
           ))}
         </div>
@@ -98,7 +91,7 @@ export default function AskPage() {
         </form>
         <div className="flex flex-wrap gap-2">
           {(mode === "recall" ? presets.recall : presets.ask).map((p) => (
-            <button key={p} className="chip hover:border-accent text-left" onClick={() => run(p)}>{p}</button>
+            <button key={p} className="chip hover:border-[var(--primary)] !text-fg text-left" onClick={() => run(p)}>{p}</button>
           ))}
         </div>
       </div>
@@ -121,15 +114,14 @@ export default function AskPage() {
         <div className="space-y-3">
           {ask.mode === "memory" && ask.answer && (
             <>
-              <div className="text-sm"><span className="chip" style={{ color: "var(--accent)" }}>answered from org memory</span> no one had to be interrupted.</div>
+              <div className="font-semibold" style={{ color: "var(--good)" }}>Answered from memory. Nobody had to be interrupted.</div>
               <MemoryCard m={ask.answer} tone="good" />
             </>
           )}
           {ask.mode === "routed" && ask.routed_to && (
             <div className="card p-4 space-y-3">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="chip" style={{ color: "#e879f9", borderColor: "#e879f9" }}>routed</span>
-                <span>Not in memory yet. Sent to</span>
+                <span className="font-semibold">Not in memory yet. Sent to</span>
                 <DevBadge dev={ask.routed_to.dev} />
                 <span className="text-muted text-sm">
                   {ask.routed_to.kind === "session" ? "via their live agent session" : "via their inbox"} · score {ask.routed_to.score}
@@ -147,9 +139,7 @@ export default function AskPage() {
                   ))}
                 </div>
               )}
-              <div className="text-sm text-muted">
-                The agent answers asynchronously. Watch <a className="underline" href="/threads">Agent threads</a> or the activity feed on the live view.
-              </div>
+              <div className="text-sm text-muted">The answer will appear in <a className="underline" href="/threads">Threads</a>.</div>
             </div>
           )}
           {ask.mode === "not_found" && <Empty>{ask.message}</Empty>}

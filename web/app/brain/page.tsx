@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useOrg } from "@/components/OrgProvider";
-import { CypherTrace, DevBadge, Empty, Spinner } from "@/components/ui";
+import { CypherTrace, DevBadge, Empty, PageHeader, Spinner } from "@/components/ui";
 import { effort, get, tokens, type Dev, type Trace } from "@/lib/api";
 import { teamColor } from "@/lib/teams";
 
@@ -43,23 +43,17 @@ export default function BrainPage() {
 
   return (
     <div className="space-y-5">
-      <div className="max-w-4xl">
-        <h1 className="text-2xl font-semibold">Company brain</h1>
-        <p className="text-muted text-sm mt-1">
-          Who actually knows what (PageRank over <span className="font-mono">CREDITS</span> edges, written every time someone reuses your fix or
-          your answer helps them), which hard-won knowledge would be lost if one person left, and how knowledge flows between teams.
-        </p>
-      </div>
+      <PageHeader title="Company brain" sub="Who really knows what, and which hard-won fixes only one person holds." />
 
       <div className="card p-4 space-y-3">
-        <h2 className="font-semibold">Who knows…?</h2>
+        <h2 className="font-bold">Who knows about…</h2>
         <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); ask(); }}>
           <input className="input" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="a topic, e.g. kafka consumer lag" />
           <button className="btn btn-primary shrink-0" disabled={topic.length < 3}>Find experts</button>
         </form>
         <div className="flex gap-2 flex-wrap">
           {["kafka consumer group rebalancing", "token refresh and JWT", "idempotent webhooks", "arm64 docker builds"].map((t) => (
-            <button key={t} className="chip hover:border-accent" onClick={() => ask(t)}>{t}</button>
+            <button key={t} className="chip hover:border-[var(--primary)] !text-fg" onClick={() => ask(t)}>{t}</button>
           ))}
         </div>
         {busy && <Spinner />}
@@ -81,7 +75,7 @@ export default function BrainPage() {
       {!b ? <Spinner label="Running PageRank…" /> : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <section className="card p-4" data-tour="experts">
-            <h2 className="font-semibold mb-3">Experts by authority <span className="text-xs text-muted font-normal">algo.pageRank(&apos;Dev&apos;,&apos;CREDITS&apos;)</span></h2>
+            <h2 className="font-bold mb-1">Experts</h2><p className="text-sm text-muted mb-4">Ranked by how often others rely on their work (PageRank).</p>
             <div className="space-y-2">
               {b.experts.map((e) => (
                 <div key={e.dev.name} className="flex items-center gap-3 text-sm">
@@ -96,8 +90,8 @@ export default function BrainPage() {
           </section>
 
           <section className="card p-4">
-            <h2 className="font-semibold mb-1">Knowledge at risk</h2>
-            <p className="text-xs text-muted mb-3">Hard-won fixes (4h+) that nobody else has ever reused. If the owner leaves, this is gone.</p>
+            <h2 className="font-bold mb-1">Knowledge at risk</h2>
+            <p className="text-sm text-muted mb-4">Hard fixes nobody else has used. If the owner leaves, they&apos;re gone.</p>
             <div className="space-y-2">
               {b.at_risk.length === 0 && <Empty>None. Every hard-won fix has spread.</Empty>}
               {b.at_risk.map((r) => (
@@ -113,7 +107,7 @@ export default function BrainPage() {
           </section>
 
           <section className="card p-4">
-            <h2 className="font-semibold mb-3">Tokens saved by reuse, per team</h2>
+            <h2 className="font-bold mb-4">Tokens saved by reuse</h2>
             <div className="space-y-2">
               {b.savings.map((s) => (
                 <div key={s.team} className="flex items-center gap-3 text-sm">
@@ -128,7 +122,7 @@ export default function BrainPage() {
           </section>
 
           <section className="card p-4">
-            <h2 className="font-semibold mb-3">Help flows between teams</h2>
+            <h2 className="font-bold mb-4">Which teams help which</h2>
             {b.help_flows.length === 0 && <Empty>No cross-team help yet.</Empty>}
             <div className="space-y-2">
               {b.help_flows.map((f, i) => (

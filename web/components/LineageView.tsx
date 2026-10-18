@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useOrg } from "@/components/OrgProvider";
 import PathGraph from "@/components/PathGraph";
-import { CypherTrace, DevBadge, Empty, Spinner } from "@/components/ui";
+import { CypherTrace, DevBadge, Empty, PageHeader, Spinner } from "@/components/ui";
 import { ago, get, type Dev, type Path, type Trace } from "@/lib/api";
 
 type Lineage = {
@@ -29,13 +29,7 @@ export default function LineageView() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-5">
-      <div>
-        <h1 className="text-2xl font-semibold">How this knowledge evolved</h1>
-        <p className="text-muted text-sm mt-1">
-          <span className="font-mono">BUILDS_ON</span> and <span className="font-mono">SUPERSEDES</span> chains across projects, people and
-          teams. Knowledge compounds instead of being rewritten from scratch.
-        </p>
-      </div>
+      <PageHeader title="How this fix evolved" sub="Each fix builds on, or replaces, the one before it, across projects and teams." />
       {err && <Empty>Unknown solution in this org.</Empty>}
       {!l && !err && <Spinner />}
       {l && (
@@ -48,12 +42,12 @@ export default function LineageView() {
                 <li key={c.id} className="ml-5">
                   <span className="absolute -left-[9px] w-4 h-4 rounded-full border-2 border-bg"
                         style={{ background: c.status === "active" ? "var(--accent)" : "var(--danger)" }} />
-                  {rel && <div className="text-[11px] font-mono text-muted mb-1">↑ {rel === "SUPERSEDES" ? "supersedes (replaced) the one above" : "builds on the one above"}</div>}
+                  {rel && <div className="text-xs font-mono text-subtle mb-1">↑ {rel === "SUPERSEDES" ? "supersedes (replaced) the one above" : "builds on the one above"}</div>}
                   <div className={`card p-3 ${c.id === id ? "ring-1 ring-accent" : ""}`}>
                     <div className="font-medium">{c.title}</div>
                     <div className="flex items-center gap-2 mt-1.5 flex-wrap text-xs">
                       <DevBadge dev={c.author} small />
-                      {c.project && <span className="chip">📁 {c.project}</span>}
+                      {c.project && <span className="chip">{c.project}</span>}
                       <span className="chip">{ago(c.created_at)}</span>
                       {c.status !== "active" && <span className="chip" style={{ color: "var(--danger)" }}>{c.status}</span>}
                     </div>
