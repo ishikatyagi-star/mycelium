@@ -15,6 +15,12 @@ Built for **Graph Hacks: Context for AI Agents** (WeMakeDevs × FalkorDB).
 
 ---
 
+## Try it in 2 minutes
+- **Story** (`/`): the problem, who's who at our demo company **Graph HQ**, and how Mycelium solves it.
+- **▶ Take the tour**: a guided walkthrough that points at the exact place in the product where each thing happens.
+- **Playground** (`/playground`): six Graph HQ engineers whose agents are mid-chat, each about to re-solve something the org already solved. Choose *solve from scratch* (replays what it cost the first time) or *Ask Mycelium first* (watch the memory fetch step by step: vector search → graph walk past stale fixes → context → rank and credit, with the real Cypher), then *Implement this*.
+- **Live org** (`/live`): every agent running right now, change ripples and agent-to-agent questions in real time.
+
 ## The problem
 A company today runs dozens of AI agents: every developer, on every team, across many components. **Each one is an island.**
 

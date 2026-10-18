@@ -19,7 +19,7 @@ Judges should see it **working within the first 60 seconds**. One story runs thr
 **0:00–0:15 · Hook** *(web: Live org view, agents pulsing)*
 > "This is a company: 5 teams, 17 services, and every dot is an AI agent working right now. Each one used to be an island. They forget what the company already learned, and they can't see each other. Mycelium connects them through one graph in FalkorDB."
 
-**0:15–0:55 · Across time: the fix nobody remembered** *(Ishika's Claude Code)*
+**0:15–0:55 · Across time: the fix nobody remembered** *(Ishika's Claude Code, or the web **Playground** → Neha → "Ask Mycelium first" for the animated version)*
 - Prompt: `Users get logged out randomly when several requests hit 401 at the same time. Fix api.ts.`
 - Show the injected context, `[Mycelium] The org has solved similar problems before`, with Yash's single-flight fix: **3 working days, 14 attempts**, the skipped stale fix, the dead ends, and ~168k tokens saved.
 - Claude applies the fix and credits Yash.

@@ -2,7 +2,7 @@
 
 > ## ⚠️ Update, Oct 18 12:00 IST: your job changed
 > Nothing had landed in `web/` by noon, so (as agreed with Ishika) **Ishika's Claude Code session is now building the web app**. Please **don't edit `web/`**, so we avoid conflicts. Your new priorities:
-> 1. **Demo video**: follow [`docs/demo-script.md`](demo-script.md) shot by shot. You're the second terminal ("Yash", Payments). Ask Ishika for the agent write token to connect your Claude Code. Record once the web app is deployed (target ~19:00–20:00).
+> 1. **Demo video**: the web app now has a Story page, a **▶ guided tour**, and a **Playground** (Graph HQ engineers' agent chats → solve from scratch vs Ask Mycelium, animated). The demo company is now called **Graph HQ** (org slug `graphhq`), not Acme. Follow [`docs/demo-script.md`](demo-script.md) shot by shot. You're the second terminal ("Yash", Payments). Ask Ishika for the agent write token to connect your Claude Code. Record once the web app is deployed (target ~19:00–20:00).
 > 2. **dev.to blog**: polish [`blog/draft.md`](../blog/draft.md) (it's a full draft). Add screenshots of the web app and your own voice, and publish once the links are final. It's for the AirPods prize.
 > 3. **Submission form**: collect the links and fill the WeMakeDevs form (Tracks 2 + 3).
 >
