@@ -1,6 +1,6 @@
 # WeMakeDevs submission: copy-paste text
 
-Paste each block into the matching field. Some forms use different labels, so the nearest match is fine. Replace `https://dev.to/ishikatyagistar/mycelium-your-agents-keep-re-solving-last-quarters-bugs-we-gave-the-whole-company-one-graph-4fdg` once the blog is published.
+Paste each block into the matching field. Some forms use different labels, so the nearest match is fine. All links below are filled in.
 
 ---
 
