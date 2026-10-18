@@ -1,6 +1,6 @@
 # WeMakeDevs submission: copy-paste text
 
-Paste each block into the matching field. Some forms use different labels, so the nearest match is fine. Replace `[DEV.TO LINK]` once the blog is published.
+Paste each block into the matching field. Some forms use different labels, so the nearest match is fine. Replace `https://dev.to/ishikatyagistar/mycelium-your-agents-keep-re-solving-last-quarters-bugs-we-gave-the-whole-company-one-graph-4fdg` once the blog is published.
 
 ---
 
@@ -19,7 +19,7 @@ One shared memory for every AI agent in a company, so a problem solved once is n
 - **Live demo:** https://web-production-76872.up.railway.app
 - **Live API (interactive docs):** https://api-production-377ba.up.railway.app/docs
 - **Demo video:** https://youtu.be/BLPcN9v1BeE
-- **Blog post:** [DEV.TO LINK]
+- **Blog post:** https://dev.to/ishikatyagistar/mycelium-your-agents-keep-re-solving-last-quarters-bugs-we-gave-the-whole-company-one-graph-4fdg
 
 ### Short description (2–3 sentences)
 Every engineer now works with an AI agent, and every agent starts each session blank. It can't see what the company already solved, or what other agents are changing right now. Mycelium connects all of them through one graph in FalkorDB: agents recall past fixes (skipping ones that later broke), get warned about changes that affect them, and route questions to whoever knows right now.

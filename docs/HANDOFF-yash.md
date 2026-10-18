@@ -24,6 +24,7 @@ Hey Yash. Ishika is asleep. This page has everything you need to catch up and st
 ## Links
 | What | Link |
 |---|---|
+| **Blog (dev.to)** | https://dev.to/ishikatyagistar/mycelium-your-agents-keep-re-solving-last-quarters-bugs-we-gave-the-whole-company-one-graph-4fdg |
 | **Demo video** | https://youtu.be/BLPcN9v1BeE |
 | **Live web app** | https://web-production-76872.up.railway.app |
 | GitHub repo (public) | https://github.com/ishikatyagi-star/mycelium |

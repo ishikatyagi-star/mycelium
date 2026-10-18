@@ -13,7 +13,7 @@ Built for **Graph Hacks: Context for AI Agents** (WeMakeDevs × FalkorDB).
 - **Demo video:** https://youtu.be/BLPcN9v1BeE
 
 [![Mycelium demo video](https://img.youtube.com/vi/BLPcN9v1BeE/hqdefault.jpg)](https://youtu.be/BLPcN9v1BeE)
-- Blog post: _(link)_
+- **Blog post (dev.to):** https://dev.to/ishikatyagistar/mycelium-your-agents-keep-re-solving-last-quarters-bugs-we-gave-the-whole-company-one-graph-4fdg
 
 ---
 
