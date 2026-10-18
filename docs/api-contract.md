@@ -1,6 +1,6 @@
 # Mycelium API contract (for `web/`)
 
-Base URL: `NEXT_PUBLIC_API_URL` (local: `http://localhost:8000`). JSON everywhere. The demo org is `acme`.
+Base URL: `NEXT_PUBLIC_API_URL` (local: `http://localhost:8000`). JSON everywhere. The demo org is `graphhq`.
 
 Every read endpoint that touches the graph returns a `trace` array. This feeds the **Show Cypher** panel.
 ```json
@@ -52,7 +52,7 @@ Timestamps are epoch seconds.
 | GET | `/api/orgs/{org}/lineage/{solution_id}` | – | `{chain:[{id, title, project, author:Dev, created_at, rel:"BUILDS_ON"\|"SUPERSEDES"}], path: Path}` |
 | GET | `/api/orgs/{org}/brain` | – | `{experts:[{dev:Dev, pagerank, helped:int}], at_risk:[{solution_id, title, owner:Dev, effort_minutes}], savings:[{team, tokens_saved, reuses}], help_flows:[{from_team, to_team, count}]}` |
 | GET | `/api/orgs/{org}/who_knows` | `?topic=` | `{experts:[{dev:Dev, score, evidence:[{solution_id, title}]}], trace}` |
-| POST | `/api/sandbox` | – | `{org: "sandbox_ab12cd"}`: a private copy of `acme` (GRAPH.COPY) that visitors can write to |
+| POST | `/api/sandbox` | – | `{org: "sandbox_ab12cd"}`: a private copy of `graphhq` (GRAPH.COPY) that visitors can write to |
 | GET | `/api/orgs/{org}/events` | SSE | stream of `Event` (see below) |
 
 `as_dev` is a dev name from the overview (for example `"Ishika"`, `"Yash"`), used to scope visibility.

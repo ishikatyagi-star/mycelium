@@ -24,7 +24,7 @@ from fleet.scenarios import FLEET
 load_dotenv()
 
 API = os.getenv("MYC_API", "http://localhost:8000").rstrip("/")
-ORG = os.getenv("MYC_ORG", "acme")
+ORG = os.getenv("MYC_ORG", "graphhq")
 HEADERS = {"x-myc-token": os.getenv("MYC_WRITE_TOKEN", "")}
 
 
@@ -50,7 +50,7 @@ def answer_text(dev: str, team: str, sc: dict, question: str, memories: list[dic
     context = "\n".join(f"- {m['solution']['title']} ({m['author']['name']}): {m['solution']['summary']}"
                         for m in memories[:3])
     out = llm.chat(
-        f"You are the AI coding agent of {dev} on the {team} team at Acme. You are currently working on: "
+        f"You are the AI coding agent of {dev} on the {team} team at Graph HQ. You are currently working on: "
         f"'{sc['task']}' (components: {', '.join(sc['components'])}). Another agent in the company routed a "
         "question to you. Answer in 1-3 sentences, concretely, from your own work context and the org memory "
         "below. If you genuinely do not know, say so and suggest who might.",

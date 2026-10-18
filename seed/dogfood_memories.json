@@ -94,7 +94,7 @@
  {
   "task": "Redis graph operation on empty key causing ResponseError",
   "title": "Handle empty graph key before executing queries",
-  "summary": "When executing a query against FalkorDB, the Redis client raised a ResponseError: 'Invalid graph operation on empty key' because the target graph had not been created or seeded. Initializing the graph (e.g., CREATE (:Node)) or ensuring the seed step runs before queries resolves the error. After seeding the synthetic Acme org, subsequent queries succeeded.",
+  "summary": "When executing a query against FalkorDB, the Redis client raised a ResponseError: 'Invalid graph operation on empty key' because the target graph had not been created or seeded. Initializing the graph (e.g., CREATE (:Node)) or ensuring the seed step runs before queries resolves the error. After seeding the synthetic Graph HQ org, subsequent queries succeeded.",
   "lessons": [
    {
     "text": "Always create or seed the graph before running any Cypher queries; otherwise Redis treats the key as empty.",

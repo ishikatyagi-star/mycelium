@@ -4,20 +4,26 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { tokens } from "@/lib/api";
 import { useOrg } from "./OrgProvider";
+import { useTour } from "./Tour";
 import { Stat } from "./ui";
 
 const LINKS = [
-  ["/", "Live org"],
+  ["/", "Story"],
+  ["/playground", "Playground"],
+  ["/live", "Live org"],
+  ["/compare", "Vector vs graph"],
   ["/ask", "Ask & recall"],
-  ["/compare", "Vector vs Mycelium"],
   ["/threads", "Agent threads"],
   ["/brain", "Company brain"],
 ] as const;
+
+export const ORG_NAMES: Record<string, string> = { graphhq: "Graph HQ (demo company)", mycelium: "Mycelium team (our real build)" };
 
 export default function Nav() {
   const path = usePathname();
   const { org, setOrg, orgs, overview, persona, setPersona, devs } = useOrg();
   const c = overview?.counts;
+  const tour = useTour();
   return (
     <header className="border-b border-line bg-surface/80 backdrop-blur sticky top-0 z-30">
       <div className="max-w-[1500px] mx-auto px-4 py-3 flex flex-wrap items-center gap-x-6 gap-y-3">
@@ -46,7 +52,8 @@ export default function Nav() {
             );
           })}
         </nav>
-        <div className="flex items-center gap-1 ml-auto divide-x divide-line">
+        <button className="btn btn-primary !py-1.5 !text-xs" onClick={() => tour.start()}>▶ Take the tour</button>
+        <div className="flex items-center gap-1 ml-auto divide-x divide-line" data-tour="stats">
           <Stat label="live agents" value={c?.live_sessions ?? "–"} />
           <Stat label="memories" value={c?.solutions ?? "–"} />
           <Stat label="sessions" value={c?.sessions ?? "–"} />
@@ -56,7 +63,7 @@ export default function Nav() {
           <label className="text-muted text-xs">org</label>
           <select className="input !w-auto !py-1.5" value={org} onChange={(e) => setOrg(e.target.value)}>
             {orgs.map((o) => (
-              <option key={o} value={o}>{o === "mycelium" ? "mycelium (our build)" : o}</option>
+              <option key={o} value={o}>{ORG_NAMES[o] || o}</option>
             ))}
           </select>
           <label className="text-muted text-xs">as</label>

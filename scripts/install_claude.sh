@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Connect a project's Claude Code (CLI or desktop app) to Mycelium: MCP tools (.mcp.json) + ambient hooks.
-# usage: scripts/install_claude.sh <project_dir> <dev_name> [org=acme] [api=http://localhost:8000] [project_name]
+# usage: scripts/install_claude.sh <project_dir> <dev_name> [org=graphhq] [api=http://localhost:8000] [project_name]
 set -euo pipefail
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
-TARGET="$(cd "${1:?project dir}" && pwd)"; DEV="${2:?dev name}"; ORG="${3:-acme}"; API="${4:-http://localhost:8000}"; PROJ="${5:-}"
+TARGET="$(cd "${1:?project dir}" && pwd)"; DEV="${2:?dev name}"; ORG="${3:-graphhq}"; API="${4:-http://localhost:8000}"; PROJ="${5:-}"
 UV="$(command -v uv)"
 python3 - "$REPO" "$TARGET" "$DEV" "$ORG" "$API" "$PROJ" "$UV" "${MYC_WRITE_TOKEN:-}" <<'PY'
 import json, os, shlex, sys

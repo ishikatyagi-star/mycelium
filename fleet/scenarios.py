@@ -1,4 +1,4 @@
-"""What the simulated agents in the 'acme' org work on. Real people (Ishika, Yash) join with real Claude Code.
+"""What the simulated agents in the 'graphhq' org work on. Real people (Ishika, Yash) join with real Claude Code.
 
 Each fleet agent cycles through its tasks. Some tasks carry a question it will ask the org,
 or a change it will announce, so the live view always has coordination happening.

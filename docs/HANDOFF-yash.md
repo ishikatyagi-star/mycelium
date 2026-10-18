@@ -19,8 +19,8 @@ Hey Yash. Ishika is asleep. This page has everything you need to catch up and st
 | GitHub repo (public) | https://github.com/ishikatyagi-star/mycelium |
 | Live API (deployed) | https://api-production-377ba.up.railway.app |
 | Live health check | https://api-production-377ba.up.railway.app/api/health |
-| Live org overview (JSON) | https://api-production-377ba.up.railway.app/api/orgs/acme/overview |
-| Live event stream (SSE) | https://api-production-377ba.up.railway.app/api/orgs/acme/events |
+| Live org overview (JSON) | https://api-production-377ba.up.railway.app/api/orgs/graphhq/overview |
+| Live event stream (SSE) | https://api-production-377ba.up.railway.app/api/orgs/graphhq/events |
 | Interactive API docs | https://api-production-377ba.up.railway.app/docs |
 | **Your build brief (start here)** | [`docs/web-brief.md`](web-brief.md) |
 | API contract | [`docs/api-contract.md`](api-contract.md) |
@@ -84,11 +84,11 @@ Hey Yash. Ishika is asleep. This page has everything you need to catch up and st
 7. Notice composer
 
 **Things to know about the live API:**
-- On the demo org `acme`, anyone can call: all `GET`s, `/recall`, `/compare`, `/ask` and `/notices`.
+- On the demo org `graphhq`, anyone can call: all `GET`s, `/recall`, `/compare`, `/ask` and `/notices`.
 - Writes that act as an agent (sessions, saving memory, answers) are agent-only and return **403** from the browser.
 - For a "try it yourself" button, call `POST /api/sandbox`. It returns `{ "org": "sandbox_xxxx" }`, a private copy where everything is writable.
 - Every graph-backed response has a `trace` array (the exact Cypher). Show it, because judges care about explainability.
-- `/api/orgs/acme/events` is Server-Sent Events. Use `EventSource` and expect these event types: `session_started`, `overlap`, `question_asked`, `question_routed`, `answer`, `notice`, `reuse`, `memory_saved`, `handoff`, `session_ended`.
+- `/api/orgs/graphhq/events` is Server-Sent Events. Use `EventSource` and expect these event types: `session_started`, `overlap`, `question_asked`, `question_routed`, `answer`, `notice`, `reuse`, `memory_saved`, `handoff`, `session_ended`.
 
 **Good demo queries to preset in the UI:**
 - Compare: `access token expired returns 401, refresh it and retry the request`. Vector-only returns the *superseded, broken* fix; Mycelium returns the real one. Highlight that in red and green.
@@ -100,7 +100,7 @@ Hey Yash. Ishika is asleep. This page has everything you need to catch up and st
 ## Later today: you in the demo video
 The video's opening shows **two real Claude Code terminals**: Ishika (Mobile) and you (Payments) in the same org. To connect your Claude Code to the live org as "Yash", you need the **agent write token**. It's deliberately **not in the repo**, so ask Ishika for it privately. Then run, from the repo:
 ```bash
-MYC_WRITE_TOKEN=<token from Ishika> scripts/install_claude.sh /path/to/any/project Yash acme https://api-production-377ba.up.railway.app "Realtime Ledger"
+MYC_WRITE_TOKEN=<token from Ishika> scripts/install_claude.sh /path/to/any/project Yash graphhq https://api-production-377ba.up.railway.app "Realtime Ledger"
 ```
 
 ## Timeline (IST)

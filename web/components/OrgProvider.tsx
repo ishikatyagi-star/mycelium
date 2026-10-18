@@ -30,13 +30,13 @@ function write(key: string, value: string) {
 }
 
 export function OrgProvider({ children }: { children: React.ReactNode }) {
-  const [org, setOrgState] = useState("acme");
-  const [orgs, setOrgs] = useState<string[]>(["acme"]);
+  const [org, setOrgState] = useState("graphhq");
+  const [orgs, setOrgs] = useState<string[]>(["graphhq"]);
   const [overview, setOverview] = useState<Overview | null>(null);
   const [persona, setPersonaState] = useState("Ishika");
 
   useEffect(() => {
-    setOrgState(read("myc.org", "acme"));
+    setOrgState(read("myc.org", "graphhq"));
     setPersonaState(read("myc.persona", "Ishika"));
     get<{ orgs: string[] }>("/api/health")
       .then((h) => setOrgs(h.orgs.filter((o) => !o.startsWith("sandbox_") && !o.startsWith("test"))))

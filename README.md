@@ -119,7 +119,7 @@ Requirements: Docker, [uv](https://docs.astral.sh/uv/), Node 20+ (for the web ap
 git clone https://github.com/ishikatyagi-star/mycelium && cd mycelium
 docker compose up -d                               # FalkorDB v4.22.1 (pinned) + Browser on http://localhost:3000
 uv sync
-PYTHONPATH=. uv run python -m seed.acme            # synthetic org "acme": 5 teams, 17 components, 14 devs, ~70 sessions
+PYTHONPATH=. uv run python -m seed.graphhq            # synthetic org "graphhq": 5 teams, 17 components, 14 devs, ~70 sessions
 PYTHONPATH=. uv run uvicorn api.main:app --port 8000
 PYTHONPATH=. uv run python -m fleet.run --hold     # optional: 10 live simulated agents (XAI_API_KEY in .env for Grok answers)
 cd web && npm install && npm run dev               # http://localhost:3001 (see web/README)
@@ -133,7 +133,7 @@ PYTHONPATH=. uv run python -m fleet.load           # writes eval/concurrency.md
 
 ### Connect your own Claude Code
 ```bash
-scripts/install_claude.sh /path/to/your/project <YourName> acme http://localhost:8000 "Mobile 3.0"
+scripts/install_claude.sh /path/to/your/project <YourName> graphhq http://localhost:8000 "Mobile 3.0"
 ```
 This writes `.mcp.json` (the `mycelium` MCP server) and `.claude/settings.local.json` (the hooks) into your project. Open Claude Code there and just work:
 - Your first prompt registers a live session.
@@ -160,7 +160,7 @@ The live API also serves a second org, `mycelium`: our real team, with memory im
 
 See `seed/mycelium_team.py` and `seed/dogfood_memories.json`.
 ```bash
-PYTHONPATH=. uv run python -m core.importer ~/.claude/projects/<project>/<session>.jsonl --org acme --dev Ishika --project "Mobile 3.0"
+PYTHONPATH=. uv run python -m core.importer ~/.claude/projects/<project>/<session>.jsonl --org graphhq --dev Ishika --project "Mobile 3.0"
 ```
 
 ## Repo layout

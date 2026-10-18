@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import Nav from "@/components/Nav";
 import { OrgProvider } from "@/components/OrgProvider";
+import { TourProvider } from "@/components/Tour";
 import "./globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -18,6 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <OrgProvider>
+          <TourProvider>
           <Suspense fallback={<div className="h-[60px] border-b border-line" />}>
             <Nav />
           </Suspense>
@@ -26,6 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             Mycelium · built on FalkorDB for Graph Hacks 2026 ·{" "}
             <a className="underline" href="https://github.com/ishikatyagi-star/mycelium">GitHub</a>
           </footer>
+          </TourProvider>
         </OrgProvider>
       </body>
     </html>

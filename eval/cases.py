@@ -1,4 +1,4 @@
-"""Benchmark cases over the synthetic 'acme' org. Written by us, alongside the seed (see eval/results.md caveats)."""
+"""Benchmark cases over the synthetic 'graphhq' org. Written by us, alongside the seed (see eval/results.md caveats)."""
 
 # Queries phrased like the *stale* fix. Expected: the current fix (graph should walk SUPERSEDES).
 STALE_TRAP = [

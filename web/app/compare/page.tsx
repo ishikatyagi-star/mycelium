@@ -7,7 +7,7 @@ import { CypherTrace, ErrorNote, Spinner } from "@/components/ui";
 import { post, type Memory, type Trace } from "@/lib/api";
 
 const PRESETS: Record<string, string[]> = {
-  acme: [
+  graphhq: [
     "access token expired returns 401, refresh it and retry the request",
     "postgres too many connections, raise max_connections",
     "kafka consumers get kicked out of the group, should we raise session.timeout.ms",
@@ -19,7 +19,7 @@ const PRESETS: Record<string, string[]> = {
 
 export default function ComparePage() {
   const { org, persona } = useOrg();
-  const presets = PRESETS[org] || PRESETS.acme;
+  const presets = PRESETS[org] || PRESETS.graphhq;
   const [q, setQ] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -41,7 +41,7 @@ export default function ComparePage() {
 
   return (
     <div className="space-y-5">
-      <div className="max-w-4xl">
+      <div className="max-w-4xl" data-tour="compare">
         <h1 className="text-2xl font-semibold">Vector-only vs Mycelium</h1>
         <p className="text-muted text-sm mt-1">
           Same question, same embeddings, same FalkorDB vector index. The left column stops at similarity. The right column lets the graph

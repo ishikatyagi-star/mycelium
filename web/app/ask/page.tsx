@@ -20,7 +20,7 @@ type AskRes = {
 };
 
 const PRESETS: Record<string, { recall: string[]; ask: string[] }> = {
-  acme: {
+  graphhq: {
     recall: [
       "mobile app randomly logs users out when several API calls refresh the token at the same time",
       "stripe sends duplicate webhook events and we charge twice",
@@ -52,7 +52,7 @@ export default function AskPage() {
   const [recall, setRecall] = useState<{ results: Memory[]; trace: Trace } | null>(null);
   const [ask, setAsk] = useState<AskRes | null>(null);
   const me = devs.find((d) => d.name === persona);
-  const presets = PRESETS[org] || PRESETS.acme;
+  const presets = PRESETS[org] || PRESETS.graphhq;
 
   const run = async (text = q, m = mode) => {
     if (text.trim().length < 3) return;

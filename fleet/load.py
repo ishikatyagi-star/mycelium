@@ -3,7 +3,7 @@
   PYTHONPATH=. uv run python -m fleet.load --agents 10,25,50 --seconds 20
 
 Each simulated agent loops: start_session (writes + overlap detection + recall) -> recall -> ask_org
-(every 5th loop) -> save_solution -> report_outcome -> end_session. Runs on a GRAPH.COPY of 'acme'.
+(every 5th loop) -> save_solution -> report_outcome -> end_session. Runs on a GRAPH.COPY of 'graphhq'.
 Writes eval/concurrency.md.
 """
 from __future__ import annotations
@@ -63,7 +63,7 @@ async def worker(c: httpx.AsyncClient, org: str, stop: float, lat: dict, errors:
 async def run(n_agents: int, seconds: int) -> dict:
     org = f"loadtest_{n_agents}"
     Org(org).delete()
-    Org("acme").copy_to(org)
+    Org("graphhq").copy_to(org)
     lat: dict[str, list] = defaultdict(list)
     errors: list = []
     limits = httpx.Limits(max_connections=n_agents + 10, max_keepalive_connections=n_agents + 10)

@@ -8,9 +8,9 @@ from core import memory as M
 from core import messaging as Msg
 from core import presence as P
 from core.db import Org, list_orgs
-from seed.acme import seed
+from seed.graphhq import seed
 
-ORG = "test_acme"
+ORG = "test_graphhq"
 
 
 @pytest.fixture(scope="module")

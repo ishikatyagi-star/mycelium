@@ -1,7 +1,7 @@
 """Backfill: turn existing Claude Code transcripts (~/.claude/projects/<project>/<session>.jsonl) into org memory,
 so a team adopting Mycelium starts with its history instead of an empty graph.
 
-  PYTHONPATH=. uv run python -m core.importer <transcript.jsonl> --org acme --dev Ishika --project "Mobile 3.0" [--dry-run]
+  PYTHONPATH=. uv run python -m core.importer <transcript.jsonl> --org graphhq --dev Ishika --project "Mobile 3.0" [--dry-run]
 
 Pipeline: parse -> scrub secrets/PII -> segment by user prompt -> LLM proposes memories (or a heuristic
 fallback) -> the normal write gate decides -> saved as finished sessions with real timestamps.
@@ -157,7 +157,7 @@ def import_transcript(path: Path, org: Org, dev: str, project: str | None, compo
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("transcript")
-    ap.add_argument("--org", default="acme")
+    ap.add_argument("--org", default="graphhq")
     ap.add_argument("--dev", required=True)
     ap.add_argument("--project")
     ap.add_argument("--components", default="")

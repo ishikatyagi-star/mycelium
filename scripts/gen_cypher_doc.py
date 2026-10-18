@@ -3,7 +3,7 @@ from pathlib import Path
 
 from core import brain as B, memory as M, messaging as Msg, presence as P
 from core.db import Org, start_trace, _trace
-from seed.acme import seed
+from seed.graphhq import seed
 
 seed("cyphdoc")
 o = Org("cyphdoc")

@@ -6,7 +6,7 @@ from fastapi.testclient import TestClient
 
 import api.main as api_main
 from core.db import Org
-from seed.acme import seed
+from seed.graphhq import seed
 
 ORG = "test_api"
 

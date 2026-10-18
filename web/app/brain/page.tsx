@@ -80,7 +80,7 @@ export default function BrainPage() {
 
       {!b ? <Spinner label="Running PageRank…" /> : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <section className="card p-4">
+          <section className="card p-4" data-tour="experts">
             <h2 className="font-semibold mb-3">Experts by authority <span className="text-xs text-muted font-normal">algo.pageRank(&apos;Dev&apos;,&apos;CREDITS&apos;)</span></h2>
             <div className="space-y-2">
               {b.experts.map((e) => (

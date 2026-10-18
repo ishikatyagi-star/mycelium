@@ -1,4 +1,4 @@
-"""Synthetic org 'acme': 5 teams, 17 components, 14 devs, 5 projects over ~4 months.
+"""Synthetic org 'graphhq' (Graph HQ): 5 teams, 17 components, 14 devs, 5 projects over ~4 months.
 
 All data is synthetic (hackathon Rule 6). Times are relative to *now* so that
 "six weeks ago" stays true whenever the demo runs.
@@ -48,11 +48,11 @@ DEPENDS_ON = [
 ]
 
 PROJECTS = [  # name, repo, components, start (days ago)
-    ("Checkout v2", "acme/checkout", ["checkout-api", "payment-webhooks", "auth-gateway", "token-service"], 120),
-    ("Realtime Ledger", "acme/ledger", ["ledger", "events-pipeline", "payment-webhooks", "refunds-worker"], 85),
-    ("ARM Migration", "acme/infra", ["ci-pipeline", "k8s-deploy"], 65),
-    ("Mobile 3.0", "acme/mobile", ["mobile-app", "push-notifications", "offline-sync", "auth-gateway"], 45),
-    ("Insights Dashboard", "acme/insights", ["reporting-api", "warehouse-etl", "feature-store"], 32),
+    ("Checkout v2", "graphhq/checkout", ["checkout-api", "payment-webhooks", "auth-gateway", "token-service"], 120),
+    ("Realtime Ledger", "graphhq/ledger", ["ledger", "events-pipeline", "payment-webhooks", "refunds-worker"], 85),
+    ("ARM Migration", "graphhq/infra", ["ci-pipeline", "k8s-deploy"], 65),
+    ("Mobile 3.0", "graphhq/mobile", ["mobile-app", "push-notifications", "offline-sync", "auth-gateway"], 45),
+    ("Insights Dashboard", "graphhq/insights", ["reporting-api", "warehouse-etl", "feature-store"], 32),
 ]
 
 # Each memory: one finished agent session that produced a solution.
@@ -331,7 +331,7 @@ LIVE = [
 ]
 
 
-def seed(slug: str = "acme", reset: bool = True, live: bool = True) -> dict:
+def seed(slug: str = "graphhq", reset: bool = True, live: bool = True) -> dict:
     org = Org(slug)
     if reset:
         org.delete()
@@ -399,10 +399,12 @@ def seed(slug: str = "acme", reset: bool = True, live: bool = True) -> dict:
             M.touch_session(org, s["session_id"])  # heartbeat: live right now
         for sid in live_ids:
             P.detect_overlaps(org, sid)
-    return {"org": slug, "solutions": ids, "live_sessions": live_ids}
+    from seed.playground import seed_playground
+    playground = seed_playground(org)
+    return {"org": slug, "solutions": ids, "live_sessions": live_ids, "playground": playground}
 
 
 if __name__ == "__main__":
     import json
     import sys
-    print(json.dumps(seed(sys.argv[1] if len(sys.argv) > 1 else "acme"), indent=1))
+    print(json.dumps(seed(sys.argv[1] if len(sys.argv) > 1 else "graphhq"), indent=1))

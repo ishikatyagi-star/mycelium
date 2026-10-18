@@ -18,7 +18,7 @@ load_dotenv()
 
 def cfg() -> dict:
     return {"api": os.getenv("MYC_API", "http://localhost:8000").rstrip("/"),
-            "org": os.getenv("MYC_ORG", "acme"),
+            "org": os.getenv("MYC_ORG", "graphhq"),
             "dev": os.getenv("MYC_DEV", ""),
             "project": os.getenv("MYC_PROJECT") or None,
             "token": os.getenv("MYC_WRITE_TOKEN", "")}

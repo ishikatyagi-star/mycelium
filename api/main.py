@@ -1,6 +1,6 @@
 """Mycelium HTTP API. The MCP server, Claude Code hooks, fleet agents and the web app all talk to this.
 
-Public demo mode (MYC_PUBLIC=1): the shared demo org `acme` is read-only for anonymous
+Public demo mode (MYC_PUBLIC=1): the shared demo org `graphhq` is read-only for anonymous
 visitors; visitors who want to write get a private sandbox copy (POST /api/sandbox).
 """
 from __future__ import annotations
@@ -24,13 +24,14 @@ from core import events
 from core import memory as M
 from core import messaging as Msg
 from core import org as O
+from core import playground as PG
 from core import presence as P
 from core.db import DatabaseUnavailable, Org, current_trace, list_orgs, ping, start_trace
 from core.schema import ensure_schema
 
 PUBLIC = os.getenv("MYC_PUBLIC") == "1"
 WRITE_TOKEN = os.getenv("MYC_WRITE_TOKEN", "")      # agents (MCP/fleet) send this to write to protected orgs
-PROTECTED_ORGS = {"acme", "mycelium"} if PUBLIC else set()
+PROTECTED_ORGS = {"graphhq", "mycelium"} if PUBLIC else set()
 
 SANDBOX_TTL_S = int(os.getenv("MYC_SANDBOX_TTL_S", str(3 * 3600)))
 MAX_SANDBOXES = 40
@@ -75,9 +76,9 @@ async def janitor_loop():
 @asynccontextmanager
 async def lifespan(_app):
     try:
-        if "acme" not in list_orgs() and os.getenv("MYC_AUTOSEED", "1") == "1":
-            from seed.acme import seed
-            seed("acme")
+        if "graphhq" not in list_orgs() and os.getenv("MYC_AUTOSEED", "1") == "1":
+            from seed.graphhq import seed
+            seed("graphhq")
         for slug in list_orgs():
             ensure_schema(Org(slug))
     except Exception as e:  # keep the API up; /api/health reports DB state
@@ -425,12 +426,39 @@ def pickup(org: str, sid: str, hid: str, request: Request):
     return Msg.pick_up(o, hid, sid)
 
 
+# ---------------------------------------------------------------- playground (read-only explainers)
+
+@app.get("/api/orgs/{org}/playground")
+def playground(org: str):
+    return {"scenarios": PG.scenarios(org_for(org))}
+
+
+@app.post("/api/orgs/{org}/playground/{sid}/recall")
+def playground_recall(org: str, sid: str):
+    try:
+        return PG.staged_recall(org_for(org), sid)
+    except ValueError as e:
+        bad(e)
+
+
+class ImplementBody(BaseModel):
+    solution_id: str
+
+
+@app.post("/api/orgs/{org}/playground/{sid}/implement")
+def playground_implement(org: str, sid: str, body: ImplementBody):
+    try:
+        return PG.implement(org_for(org), sid, body.solution_id)
+    except ValueError as e:
+        bad(e)
+
+
 # ---------------------------------------------------------------- sandbox + events
 
 @app.post("/api/sandbox")
 def sandbox():
     slug = f"sandbox_{int(time.time()):x}_{secrets.token_hex(2)}"
-    Org("acme").copy_to(slug)
+    Org("graphhq").copy_to(slug)
     return {"org": slug, "expires_in_s": SANDBOX_TTL_S}
 
 

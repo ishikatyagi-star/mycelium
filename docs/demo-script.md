@@ -3,14 +3,14 @@
 Judges should see it **working within the first 60 seconds**. One story runs throughout: the token-refresh bug, past and present.
 
 ## Pre-flight (15 min before recording)
-- [ ] `curl https://api-production-377ba.up.railway.app/api/health` returns `ok: true`, and the orgs list includes `acme` and `mycelium`.
+- [ ] `curl https://api-production-377ba.up.railway.app/api/health` returns `ok: true`, and the orgs list includes `graphhq` and `mycelium`.
 - [ ] The fleet is running: `railway logs --service fleet` shows recent `started` / `answered` lines. The live org shows about 8–10 live agents.
 - [ ] **Ishika's terminal:** Claude Code open in `~/Documents/Projects/mycelium-demo-mobile` (connected as Ishika, Mobile team). Fresh session, so `.mycelium/session.json` is deleted.
-- [ ] **Yash's terminal:** Claude Code in any project, connected as Yash (Payments) via `scripts/install_claude.sh ... Yash acme <api> "Realtime Ledger"` with the write token.
+- [ ] **Yash's terminal:** Claude Code in any project, connected as Yash (Payments) via `scripts/install_claude.sh ... Yash graphhq <api> "Realtime Ledger"` with the write token.
 - [ ] The web app (https://web-production-76872.up.railway.app) is open on the **Live org** view at 1440px, with dark mode and notifications off. Click **Fit** if the graph isn't centered.
 - [ ] Reset the demo state if needed. Reseeding is safe and takes 20 s:
   ```bash
-  set -a; . ./.env.cloud; set +a; PYTHONPATH=. uv run python -m seed.acme
+  set -a; . ./.env.cloud; set +a; PYTHONPATH=. uv run python -m seed.graphhq
   ```
 - [ ] Record at 1440×900 or 1920×1080. Zoom the terminal font to 16pt+.
 

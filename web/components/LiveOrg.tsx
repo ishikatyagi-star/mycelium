@@ -174,9 +174,9 @@ export default function LiveOrg() {
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-4">
-      <div className="card relative overflow-hidden" style={{ minHeight: 640, background: bg }}>
+      <div className="card relative overflow-hidden" style={{ minHeight: 640, background: bg }} data-tour="live-graph">
         <div className="absolute top-3 left-4 z-10 pointer-events-none">
-          <h1 className="text-xl font-semibold">The {org} org, live</h1>
+          <h1 className="text-xl font-semibold">{org === "graphhq" ? "Graph HQ" : org}, live</h1>
           <p className="text-sm text-muted max-w-md">
             Teams own components (arrows: <span className="font-mono text-xs">DEPENDS_ON</span>). Glowing dots are AI agents running
             right now, attached to what they touch. Every interaction below is a FalkorDB query.
@@ -188,7 +188,7 @@ export default function LiveOrg() {
             {connected ? "live stream" : "connecting…"}
           </span>
           <button className="btn" onClick={() => fgRef.current && fitTo(fgRef.current, graph.nodes, size.width, size.height, 70)}>Fit</button>
-          <button className="btn btn-primary" onClick={() => setNoticeOpen(true)}>Announce a change</button>
+          <button className="btn btn-primary" data-tour="notice" onClick={() => setNoticeOpen(true)}>Announce a change</button>
         </div>
         <div className="absolute bottom-3 left-4 z-10 flex flex-wrap gap-2 text-xs pointer-events-none">
           {(overview?.teams || []).map((t) => (
@@ -286,7 +286,7 @@ export default function LiveOrg() {
       </div>
 
       <aside className="space-y-4 min-w-0">
-        <div className="card p-4">
+        <div className="card p-4" data-tour="feed">
           <h2 className="font-semibold mb-2 flex items-center justify-between">
             Activity <span className="text-xs text-muted font-normal">real-time event stream</span>
           </h2>

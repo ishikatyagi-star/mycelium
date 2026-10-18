@@ -138,7 +138,7 @@ A memory system agents forget to use is useless, so Mycelium hooks into Claude C
 
 One command connects any project:
 ```bash
-scripts/install_claude.sh ~/code/mobile-app Ishika acme https://api-production-377ba.up.railway.app "Mobile 3.0"
+scripts/install_claude.sh ~/code/mobile-app Ishika graphhq https://api-production-377ba.up.railway.app "Mobile 3.0"
 ```
 
 ## A company that's always busy
@@ -202,7 +202,7 @@ We built Mycelium with Claude Code. Ishika's session did the core, API, MCP, fle
 
 ## Try it
 - **Live:** https://web-production-76872.up.railway.app
-- **Run it locally:** `docker compose up -d && uv sync && PYTHONPATH=. uv run python -m seed.acme && PYTHONPATH=. uv run uvicorn api.main:app`
+- **Run it locally:** `docker compose up -d && uv sync && PYTHONPATH=. uv run python -m seed.graphhq && PYTHONPATH=. uv run uvicorn api.main:app`
 - **Connect your own Claude Code:** `scripts/install_claude.sh <your project> <your name>`
 
 *Built by Ishika Tyagi and Yash for Graph Hacks 2026.*

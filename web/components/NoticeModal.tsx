@@ -15,7 +15,7 @@ type Impact = {
 };
 
 const PRESETS: Record<string, [string, string]> = {
-  acme: ["token-service", "Signing keys rotate today 14:00 UTC; clients must refetch JWKS on an unknown kid"],
+  graphhq: ["token-service", "Signing keys rotate today 14:00 UTC; clients must refetch JWKS on an unknown kid"],
   mycelium: ["api", "Recall responses now include a `skipped` list for superseded fixes"],
 };
 

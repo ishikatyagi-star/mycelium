@@ -1,8 +1,8 @@
 # Graph model
 
-One FalkorDB graph per organisation (`org_<slug>`). The graph is the tenant boundary: an agent in `org_acme`
+One FalkorDB graph per organisation (`org_<slug>`). The graph is the tenant boundary: an agent in `org_graphhq`
 cannot see anything in another org's graph. The public demo hands every visitor a private copy
-(`GRAPH.COPY org_acme org_sandbox_xxxx`).
+(`GRAPH.COPY org_graphhq org_sandbox_xxxx`).
 
 ```mermaid
 graph LR
