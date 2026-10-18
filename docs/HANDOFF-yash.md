@@ -1,3 +1,12 @@
+> ## 🚨 Deadline update (Oct 18, 17:15 IST): submissions close TONIGHT, 11:59 PM IST
+> The organizers' latest message says submissions close **today at 11:59 PM IST**, not tomorrow morning. Plan to **submit by 23:00**.
+> | When | What |
+> |---|---|
+> | 17:30–19:30 | Record the demo video (`docs/demo-script.md`), working product only, no slides |
+> | 19:30–21:00 | Publish the dev.to blog (`blog/draft.md`), add screenshots |
+> | 21:00–22:30 | Fill the WeMakeDevs form (Tracks 2 + 3): repo, live URL, video, blog |
+> | **23:00** | **Submit** (keep the last hour as buffer) |
+
 # Handoff for Yash (Oct 18, 05:00 IST; updated 12:00)
 
 > ## ⚠️ Update, Oct 18 12:00 IST: your job changed
