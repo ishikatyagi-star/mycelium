@@ -29,7 +29,7 @@ function Markdown({ text }: { text: string }) {
         ) : (
           <p key={i} className="whitespace-pre-wrap leading-relaxed"
              dangerouslySetInnerHTML={{ __html: p.trim().replace(/&/g, "&amp;").replace(/</g, "&lt;")
-               .replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/_(.+?)_/g, "<i>$1</i>").replace(/`([^`]+)`/g, "<code>$1</code>") }} />
+               .replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/(^|\s)_([^_]+?)_(?=[\s.,!?]|$)/g, "$1<i>$2</i>").replace(/`([^`]+)`/g, "<code>$1</code>") }} />
         ),
       )}
     </div>
@@ -48,7 +48,7 @@ export default function PlaygroundPage() {
   const [err, setErr] = useState<string | null>(null);
   const [spent, setSpent] = useState({ tokens: 0, minutes: 0 });
   const runId = useRef(0);
-  const chatEnd = useRef<HTMLDivElement>(null);
+  const chatBox = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     get<{ scenarios: Scenario[] }>("/api/orgs/graphhq/playground").then((r) => {
@@ -72,8 +72,9 @@ export default function PlaygroundPage() {
   }, []);
 
   useEffect(() => {
-    chatEnd.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  }, [extra.length]);
+    const el = chatBox.current; // scroll the chat itself, never the page
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+  }, [extra.length, busy]);
 
   const fetchStaged = async () => {
     if (!s) return null;
@@ -214,7 +215,7 @@ export default function PlaygroundPage() {
                 <span className="text-xs font-mono text-muted">{s.components.join(", ")}</span>
                 <span className="ml-auto text-xs text-muted">Claude Code session · {ago(s.started_at)}</span>
               </div>
-              <div className="flex-1 overflow-auto p-4 space-y-3 max-h-[560px]">
+              <div ref={chatBox} className="flex-1 overflow-auto p-4 space-y-3 max-h-[560px]">
                 {[...s.transcript.map((t) => ({ ...t } as Msg)), ...extra].map((t, i) => (
                   <div key={i} className={`flex ${t.role === "user" ? "justify-end" : "justify-start"}`}>
                     <div className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm ${
@@ -231,7 +232,6 @@ export default function PlaygroundPage() {
                   </div>
                 ))}
                 {busy && <Spinner label={mode === "memory" ? "Asking the org's memory…" : "Working…"} />}
-                <div ref={chatEnd} />
               </div>
               <div className="border-t border-line p-4 space-y-3" data-tour="decision">
                 {mode === null && (

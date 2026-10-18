@@ -39,7 +39,11 @@ export function OrgProvider({ children }: { children: React.ReactNode }) {
     setOrgState(read("myc.org", "graphhq"));
     setPersonaState(read("myc.persona", "Ishika"));
     get<{ orgs: string[] }>("/api/health")
-      .then((h) => setOrgs(h.orgs.filter((o) => !o.startsWith("sandbox_") && !o.startsWith("test"))))
+      .then((h) => {
+        const list = h.orgs.filter((o) => !o.startsWith("sandbox_") && !o.startsWith("test") && !o.startsWith("loadtest"));
+        setOrgs(list);
+        setOrgState((cur) => (list.includes(cur) ? cur : "graphhq")); // e.g. an org saved before a rename
+      })
       .catch(() => {});
   }, []);
 
