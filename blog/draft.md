@@ -1,8 +1,7 @@
 ---
 title: "Mycelium: Your Agents Keep Re-Solving Last Quarter's Bugs. We Gave the Whole Company One Graph."
-published: false
+published: true
 tags: falkordb, ai, agents, graphdatabase
-cover_image: # TODO before publishing: screenshot of the Playground after "Ask Mycelium first"
 ---
 
 > **TL;DR:** Mycelium is one shared context graph, on FalkorDB, for every AI agent in a company.
