@@ -182,7 +182,7 @@ export default function LiveOrg() {
                   <Stat label="tokens saved" value={tokens(c.tokens_saved)} /></div>} />
     <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-4">
       <div className="card relative overflow-hidden" style={{ minHeight: 640, background: bg }} data-tour="live-graph">
-        <div className="absolute top-3 left-4 z-10 pointer-events-none flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted">
+        <div className="absolute top-3 left-4 z-10 pointer-events-none hidden lg:flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted">
           <span className="inline-flex items-center gap-1.5"><span className="w-3 h-3 rounded-full border-2" style={{ borderColor: "var(--subtle)" }} /> team</span>
           <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full" style={{ background: "var(--subtle)" }} /> service</span>
           <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-white border-2" style={{ borderColor: "var(--primary)", boxShadow: "0 0 0 3px color-mix(in srgb, var(--primary) 25%, transparent)" }} /> agent working now</span>

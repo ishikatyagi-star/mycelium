@@ -52,7 +52,7 @@ export default function ComparePage() {
         <button className="btn btn-primary shrink-0" disabled={busy || q.length < 3}>Compare</button>
       </form>
       <div className="flex flex-wrap gap-2">
-        {presets.map((p) => <button key={p} className="chip hover:border-[var(--primary)] !text-fg" onClick={() => run(p)}>{p}</button>)}
+        {presets.map((p) => <button key={p} className="chip hover:border-[var(--primary)] !text-fg !whitespace-normal text-left" onClick={() => run(p)}>{p}</button>)}
       </div>
       {busy && <Spinner />}
       <ErrorNote error={err} />

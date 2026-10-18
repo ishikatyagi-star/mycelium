@@ -54,7 +54,7 @@ export default function Nav() {
         </nav>
         <div className="ml-auto flex items-center gap-2 text-sm">
           <label className="sr-only" htmlFor="org">Organization</label>
-          <select id="org" className="input !w-auto !min-h-[36px] !py-1 !text-sm" value={org} onChange={(e) => setOrg(e.target.value)}>
+          <select id="org" className="input !w-auto !min-h-[36px] !py-1 !text-sm hidden sm:block" value={org} onChange={(e) => setOrg(e.target.value)}>
             {orgs.map((o) => <option key={o} value={o}>{ORG_NAMES[o] || o}</option>)}
           </select>
           <label className="sr-only" htmlFor="persona">Viewing as</label>
@@ -63,7 +63,7 @@ export default function Nav() {
             {devs.map((d) => <option key={d.name} value={d.name}>as {d.name} · {d.team}</option>)}
           </select>
           <button className="btn !min-h-[36px] !py-1" onClick={() => tour.start()}>
-            <Compass size={16} aria-hidden /> Tour
+            <Compass size={16} aria-hidden /> <span className="hidden sm:inline">Tour</span><span className="sr-only sm:hidden">Tour</span>
           </button>
         </div>
       </div>

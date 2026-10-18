@@ -91,7 +91,7 @@ export default function AskPage() {
         </form>
         <div className="flex flex-wrap gap-2">
           {(mode === "recall" ? presets.recall : presets.ask).map((p) => (
-            <button key={p} className="chip hover:border-[var(--primary)] !text-fg text-left" onClick={() => run(p)}>{p}</button>
+            <button key={p} className="chip hover:border-[var(--primary)] !text-fg !whitespace-normal text-left" onClick={() => run(p)}>{p}</button>
           ))}
         </div>
       </div>

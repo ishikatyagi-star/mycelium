@@ -53,7 +53,7 @@ export default function BrainPage() {
         </form>
         <div className="flex gap-2 flex-wrap">
           {["kafka consumer group rebalancing", "token refresh and JWT", "idempotent webhooks", "arm64 docker builds"].map((t) => (
-            <button key={t} className="chip hover:border-[var(--primary)] !text-fg" onClick={() => ask(t)}>{t}</button>
+            <button key={t} className="chip hover:border-[var(--primary)] !text-fg !whitespace-normal text-left" onClick={() => ask(t)}>{t}</button>
           ))}
         </div>
         {busy && <Spinner />}
