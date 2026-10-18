@@ -25,7 +25,7 @@ from core import memory as M
 from core import messaging as Msg
 from core import org as O
 from core import presence as P
-from core.db import DatabaseUnavailable, Org, client, current_trace, list_orgs, ping, start_trace
+from core.db import DatabaseUnavailable, Org, current_trace, list_orgs, ping, start_trace
 from core.schema import ensure_schema
 
 PUBLIC = os.getenv("MYC_PUBLIC") == "1"
@@ -439,20 +439,16 @@ async def stream(org: str, request: Request):
     org_for(org)
 
     async def gen():
-        pubsub = client().connection.pubsub()
-        pubsub.subscribe(events.channel(org))
+        sub = events.subscribe(org)
         try:
             yield {"event": "hello", "data": json.dumps({"org": org})}
-            last_ping = time.time()
             while not await request.is_disconnected():
-                msg = await asyncio.to_thread(pubsub.get_message, ignore_subscribe_messages=True, timeout=1.0)
-                if msg and msg.get("type") == "message":
-                    data = msg["data"].decode() if isinstance(msg["data"], bytes) else msg["data"]
+                try:
+                    data = await asyncio.wait_for(sub[1].get(), timeout=15)
                     yield {"event": json.loads(data).get("type", "event"), "data": data}
-                if time.time() - last_ping > 15:
-                    last_ping = time.time()
+                except asyncio.TimeoutError:
                     yield {"event": "ping", "data": "{}"}
         finally:
-            pubsub.close()
+            events.unsubscribe(org, sub)
 
     return EventSourceResponse(gen())

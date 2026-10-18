@@ -77,3 +77,17 @@ def test_janitor_deletes_old_sandboxes_and_expires_sessions(client, monkeypatch)
     st = Org(ORG).read("t", "MATCH (s:Session {id:$s}) RETURN s.status AS st", {"s": stale["session_id"]})
     assert st[0]["st"] == "done"
     Org(fresh).delete()
+
+
+def test_event_bus_fans_out_to_subscribers():
+    import asyncio
+    import json
+    from core import events
+
+    async def run():
+        sub = events.subscribe("bus_test")
+        await asyncio.to_thread(events.publish, "bus_test", "notice", component="ledger")  # from a worker thread
+        msg = await asyncio.wait_for(sub[1].get(), timeout=2)
+        events.unsubscribe("bus_test", sub)
+        return json.loads(msg)
+    assert asyncio.run(run()) == {"type": "notice", "component": "ledger"}

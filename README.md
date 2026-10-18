@@ -82,7 +82,6 @@ flowchart LR
   end
   W[Web app: live org, recall, compare, threads, brain] -- REST + SSE --> API
   API[Mycelium API, FastAPI] -- Cypher, RO_QUERY for reads --> DB[(FalkorDB: one graph per org)]
-  API -- pub/sub events --> DB
   E[fastembed bge-small, local] --- API
 ```
 - **FalkorDB** is the only store.
@@ -90,7 +89,7 @@ flowchart LR
   - Visitors get a private copy via `GRAPH.COPY`.
   - Native vector indexes on `Task` and `Question` cover the "similar" half.
   - Cypher covers the rest, including `algo.pageRank` and variable-length `DEPENDS_ON` and `SUPERSEDES` walks.
-  - FalkorDB's Redis pub/sub carries live events to the UI.
+  - Live events reach the UI over SSE from the API's in-process bus. All agents go through the API. FalkorDB Cloud free doesn't allow pub/sub.
 - **The LLM never writes Cypher.** Agents call a fixed catalogue of parameterised tools. Names are resolved against the graph, so agents can't invent components or people. Writes pass a code-level gate that leaves receipts.
 
 The full graph model is in [`docs/graph-model.md`](docs/graph-model.md), and every query the product runs is in [`docs/cypher.md`](docs/cypher.md).

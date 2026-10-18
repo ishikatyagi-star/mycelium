@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "/Users/ishikatyagi/Documents/Projects/Graph/web", "run", "dev", "--", "-p", "3001"],
+      "port": 3001
+    }
+  ]
+}

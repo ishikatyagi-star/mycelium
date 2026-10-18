@@ -189,7 +189,7 @@ Ask it *"Railway deploy fails after moving the service to another region"* and y
 - We ran on FalkorDB 4.22 (Cloud free plus a pinned Docker image) and haven't tested the 6.0 engine yet.
 
 ## Stack
-- FalkorDB Cloud (vector index, Cypher, `algo.pageRank`, `GRAPH.COPY`, pub/sub)
+- FalkorDB Cloud (vector index, Cypher, `algo.pageRank`, `GRAPH.COPY`)
 - Python, FastAPI, SSE
 - MCP (Python SDK) plus Claude Code hooks
 - fastembed (bge-small)
