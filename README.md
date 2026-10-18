@@ -141,7 +141,7 @@ Same embeddings and the same FalkorDB vector index on both sides. The only diffe
 flowchart LR
   subgraph Agents
     CC1[Claude Code: Ishika / Mobile] -- MCP + hooks --> API
-    CC2[Claude Code: Yash / Payments] -- MCP + hooks --> API
+    CC2[Claude Code: any engineer, any team] -- MCP + hooks --> API
     F[Fleet: 10 simulated agents across 5 teams, LLM via Groq] --> API
   end
   W[Web app: live org, recall, compare, threads, brain] -- REST + SSE --> API
@@ -269,4 +269,4 @@ PYTHONPATH=. uv run python -m core.importer ~/.claude/projects/<project>/<sessio
 We built this with Claude Code, and an LLM (Groq, `gpt-oss-120b`) runs inside the product for fleet answers, transcript extraction and the playground's *Implement this*. Details are in [`docs/ai-disclosure.md`](docs/ai-disclosure.md).
 
 ## Team
-Ishika Tyagi · Yash
+Ishika Tyagi (solo)

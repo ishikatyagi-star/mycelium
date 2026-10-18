@@ -215,7 +215,7 @@ Ask it *"Railway deploy fails after moving the service to another region"* and y
 - Railway
 
 ## AI disclosure
-We built Mycelium with Claude Code, which wrote most of the code: core, API, MCP server, hooks, fleet, eval and the web app. We directed the product, made the calls, reviewed and tested everything, and can explain every query. Details are in [`docs/ai-disclosure.md`](https://github.com/ishikatyagi-star/mycelium/blob/master/docs/ai-disclosure.md).
+I built Mycelium with Claude Code, which wrote most of the code: core, API, MCP server, hooks, fleet, eval and the web app. I directed the product, made the calls, reviewed and tested everything, and can explain every query. Details are in [`docs/ai-disclosure.md`](https://github.com/ishikatyagi-star/mycelium/blob/master/docs/ai-disclosure.md).
 
 ## Try it
 - **Watch the demo:** https://youtu.be/BLPcN9v1BeE
@@ -223,6 +223,6 @@ We built Mycelium with Claude Code, which wrote most of the code: core, API, MCP
 - **Run it locally:** `docker compose up -d && uv sync && PYTHONPATH=. uv run python -m seed.graphhq && PYTHONPATH=. uv run uvicorn api.main:app`
 - **Onboard your own company:** `POST /api/orgs` (see above), then connect Claude Code: `scripts/install_claude.sh <your project> <your name> <your org slug> <api url>`
 
-*Built by Ishika Tyagi and Yash for Graph Hacks 2026.*
+*Built by Ishika Tyagi for Graph Hacks 2026.*
 
 {% github ishikatyagi-star/mycelium %}

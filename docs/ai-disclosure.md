@@ -1,10 +1,9 @@
 # AI assistance disclosure
 
-Graph Hacks rules require disclosing AI coding assistance. We used it heavily, and here is exactly how.
+Graph Hacks rules require disclosing AI coding assistance. I used it heavily, and here is exactly how.
 
 ## Tools used
-- **Claude Code (Claude Opus)** wrote most of the code for `core/`, `api/`, `mcp_server/`, `hooks/`, `fleet/`, `seed/`, `eval/`, `tests/` and the docs. It worked in Ishika's session.
-- **Claude Code** (Ishika's session) also built `web/`. Yash's session was planned to build it, but it hadn't started by noon on Oct 18, so Ishika's session took it over.
+- **Claude Code (Claude Opus)** wrote most of the code for `core/`, `api/`, `mcp_server/`, `hooks/`, `fleet/`, `seed/`, `eval/`, `tests/`, `web/` and the docs, working in Ishika's session.
 - **An LLM via Groq (`openai/gpt-oss-120b`)** runs *inside the product*. It does four jobs:
   - It answers questions as simulated fleet agents.
   - It drafts memory entries for fleet agents.
@@ -14,8 +13,8 @@ Graph Hacks rules require disclosing AI coding assistance. We used it heavily, a
   Every one of these calls has a deterministic fallback. The LLM proposes; the write gate (plain code) decides what is stored.
 - **UI/UX Pro Max** (an open-source Claude skill) generated the design system the web app follows: style, palette, type scale and accessibility checklist.
 
-## What the humans did
-- **Problem framing and product direction (Ishika):**
+## What I did (Ishika Tyagi, solo)
+- **Problem framing and product direction:**
   - Memory across time *and* live coordination across teams.
   - Agents talking to other users' agents.
   - Hard-won knowledge ranking higher.
@@ -25,10 +24,10 @@ Graph Hacks rules require disclosing AI coding assistance. We used it heavily, a
   - Naming.
   - Deployment.
   - What the demo must prove.
-- **Review and verification:** we read the graph model and the queries, and ran the tests and benchmark. Every milestone was walked through and explained before moving on.
-- **The demo video, blog and submission (Yash).**
+- **Review and verification:** I read the graph model and the queries, and ran the tests and benchmark. Every milestone was walked through and explained before moving on.
+- **The demo video, blog and submission.**
 
-## What we can explain without the AI
+## What I can explain without the AI
 - The graph model (`docs/graph-model.md`) and why each relationship exists.
 - Every query (`docs/cypher.md`).
 - Why recall is vector plus graph, and what the graph adds:

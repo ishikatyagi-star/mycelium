@@ -68,10 +68,10 @@ PYTHONPATH=. uv run uvicorn api.main:app --port 8000
 Full instructions are in the README.
 
 ### AI disclosure
-We built Mycelium with Claude Code (Claude Opus), which wrote most of the code: the graph core, API, MCP server, hooks, fleet simulator, benchmark and web app. We directed the product, made the design and scope decisions, reviewed and tested every milestone, and can explain the graph model and every query. Inside the product, an LLM (Groq, `gpt-oss-120b`) powers the simulated agents' answers, transcript extraction and the playground's "Implement this". Every LLM call has a deterministic fallback, and plain code decides what gets stored. The UI design system came from the open-source UI/UX Pro Max skill. Full details: `docs/ai-disclosure.md` in the repo.
+I built Mycelium with Claude Code (Claude Opus), which wrote most of the code: the graph core, API, MCP server, hooks, fleet simulator, benchmark and web app. I directed the product, made the design and scope decisions, reviewed and tested every milestone, and can explain the graph model and every query. Inside the product, an LLM (Groq, `gpt-oss-120b`) powers the simulated agents' answers, transcript extraction and the playground's "Implement this". Every LLM call has a deterministic fallback, and plain code decides what gets stored. The UI design system came from the open-source UI/UX Pro Max skill. Full details: `docs/ai-disclosure.md` in the repo.
 
 ### Team
-Ishika Tyagi, Yash
+Ishika Tyagi (solo)
 
 ### Challenges (if asked)
 - **FalkorDB Cloud's free tier blocks Redis pub/sub.** We moved live events to an in-process bus in the API.
