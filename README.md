@@ -10,7 +10,9 @@ Built for **Graph Hacks: Context for AI Agents** (WeMakeDevs × FalkorDB).
 **Links:**
 - **Live demo (web app):** https://web-production-76872.up.railway.app
 - Live API: https://api-production-377ba.up.railway.app/docs
-- Demo video: _(link)_
+- **Demo video:** https://youtu.be/BLPcN9v1BeE
+
+[![Mycelium demo video](https://img.youtube.com/vi/BLPcN9v1BeE/hqdefault.jpg)](https://youtu.be/BLPcN9v1BeE)
 - Blog post: _(link)_
 
 ---

@@ -11,7 +11,7 @@ cover_image: # TODO before publishing: screenshot of the Playground after "Ask M
 > - It plugs into Claude Code through MCP and hooks.
 > - On our benchmark, plain vector search hands back a broken, superseded fix on 12/12 "stale-fix trap" queries. Mycelium: 0/12.
 >
-> 🔗 **Live demo:** https://web-production-76872.up.railway.app · **API:** https://api-production-377ba.up.railway.app/docs · **Code:** https://github.com/ishikatyagi-star/mycelium · **Video:** _TODO_
+> 🔗 **Live demo:** https://web-production-76872.up.railway.app · **API:** https://api-production-377ba.up.railway.app/docs · **Code:** https://github.com/ishikatyagi-star/mycelium · **Video:** https://youtu.be/BLPcN9v1BeE
 >
 > Built for **Graph Hacks: Context for AI Agents** (WeMakeDevs × FalkorDB), Track 2 (Agent Memory & Coordination) and Track 3 (Company Brain).
 
@@ -223,6 +223,7 @@ Ask it *"Railway deploy fails after moving the service to another region"* and y
 We built Mycelium with Claude Code, which wrote most of the code: core, API, MCP server, hooks, fleet, eval and the web app. We directed the product, made the calls, reviewed and tested everything, and can explain every query. Details are in [`docs/ai-disclosure.md`](https://github.com/ishikatyagi-star/mycelium/blob/master/docs/ai-disclosure.md).
 
 ## Try it
+- **Watch the demo:** https://youtu.be/BLPcN9v1BeE
 - **Live:** https://web-production-76872.up.railway.app
 - **Run it locally:** `docker compose up -d && uv sync && PYTHONPATH=. uv run python -m seed.graphhq && PYTHONPATH=. uv run uvicorn api.main:app`
 - **Onboard your own company:** `POST /api/orgs` (see above), then connect Claude Code: `scripts/install_claude.sh <your project> <your name> <your org slug> <api url>`

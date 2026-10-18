@@ -24,6 +24,7 @@ Hey Yash. Ishika is asleep. This page has everything you need to catch up and st
 ## Links
 | What | Link |
 |---|---|
+| **Demo video** | https://youtu.be/BLPcN9v1BeE |
 | **Live web app** | https://web-production-76872.up.railway.app |
 | GitHub repo (public) | https://github.com/ishikatyagi-star/mycelium |
 | Live API (deployed) | https://api-production-377ba.up.railway.app |
