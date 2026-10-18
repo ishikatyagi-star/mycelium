@@ -177,3 +177,13 @@ a, button, select, [role="button"] {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* "Start the tour" invites the first click until the visitor has opened the tour once */
+@keyframes tour-ring {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 45%, transparent); }
+  70% { box-shadow: 0 0 0 12px color-mix(in srgb, var(--primary) 0%, transparent); }
+  100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 0%, transparent); }
+}
+.tour-cta {
+  animation: tour-ring 1.8s ease-out infinite;
+}

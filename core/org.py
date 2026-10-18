@@ -83,3 +83,78 @@ def overview(org: Org) -> dict:
                          RETURN sessions, live_sessions, solutions, questions,
                                 coalesce(sum(r.tokens_saved), 0) AS tokens_saved""")
     return {"teams": teams, "projects": projects, "counts": counts[0] if counts else {}}
+
+
+# ---------------------------------------------------------------- onboarding: create a whole org from a spec
+
+MAX_TEAMS, MAX_COMPONENTS, MAX_PEOPLE, MAX_DEPS = 50, 500, 1000, 2000
+
+
+class OrgSpecError(ValueError):
+    """The spec is invalid. `problems` lists every issue found, not just the first."""
+
+    def __init__(self, problems: list[str]):
+        super().__init__("; ".join(problems))
+        self.problems = problems
+
+
+def validate_spec(teams: list[dict], dependencies: list[dict], projects: list[dict]) -> list[str]:
+    problems: list[str] = []
+    comps: dict[str, str] = {}
+    people: dict[str, str] = {}
+    team_names: set[str] = set()
+    for t in teams:
+        if t["name"] in team_names:
+            problems.append(f"duplicate team {t['name']!r}")
+        team_names.add(t["name"])
+        for c in t.get("services", []):
+            if c["name"] in comps:
+                problems.append(f"service {c['name']!r} is listed under both {comps[c['name']]!r} and {t['name']!r}")
+            comps[c["name"]] = t["name"]
+        for p in t.get("people", []):
+            if p["name"] in people:
+                problems.append(f"person {p['name']!r} is in both {people[p['name']]!r} and {t['name']!r}")
+            people[p["name"]] = t["name"]
+    if not teams:
+        problems.append("at least one team is required")
+    if len(teams) > MAX_TEAMS or len(comps) > MAX_COMPONENTS or len(people) > MAX_PEOPLE or len(dependencies) > MAX_DEPS:
+        problems.append(f"too large: max {MAX_TEAMS} teams, {MAX_COMPONENTS} services, {MAX_PEOPLE} people, {MAX_DEPS} dependencies")
+    for d in dependencies:
+        for end in ("service", "depends_on"):
+            if d[end] not in comps:
+                problems.append(f"dependency {d['service']!r} -> {d['depends_on']!r}: unknown service {d[end]!r}")
+        if d["service"] == d["depends_on"]:
+            problems.append(f"service {d['service']!r} can't depend on itself")
+    for p in projects:
+        for c in p.get("services", []):
+            if c not in comps:
+                problems.append(f"project {p['name']!r}: unknown service {c!r}")
+    return problems
+
+
+def create_org(org: Org, teams: list[dict], dependencies: list[dict], projects: list[dict]) -> dict:
+    """Write a validated spec in a handful of batched (UNWIND) queries. Assumes the graph is new."""
+    problems = validate_spec(teams, dependencies, projects)
+    if problems:
+        raise OrgSpecError(problems)
+    org.write("onboard.teams", "UNWIND $teams AS t MERGE (:Team {name:t})", {"teams": [t["name"] for t in teams]})
+    org.write("onboard.services",
+              """UNWIND $rows AS r MATCH (t:Team {name:r.team})
+                 MERGE (c:Component {name:r.name}) SET c.category = r.category
+                 MERGE (t)-[:OWNS]->(c)""",
+              {"rows": [{"team": t["name"], "name": c["name"], "category": c.get("category", "")}
+                        for t in teams for c in t.get("services", [])]})
+    org.write("onboard.people",
+              """UNWIND $rows AS r MATCH (t:Team {name:r.team})
+                 MERGE (d:Dev {name:r.name}) SET d.role = r.role
+                 MERGE (d)-[:MEMBER_OF]->(t)""",
+              {"rows": [{"team": t["name"], "name": p["name"], "role": p.get("role", "")}
+                        for t in teams for p in t.get("people", [])]})
+    if dependencies:
+        org.write("onboard.dependencies",
+                  """UNWIND $rows AS r MATCH (a:Component {name:r.a}), (b:Component {name:r.b})
+                     MERGE (a)-[:DEPENDS_ON]->(b)""",
+                  {"rows": [{"a": d["service"], "b": d["depends_on"]} for d in dependencies]})
+    for p in projects:
+        upsert_project(org, p["name"], p.get("repo", ""), p.get("services", []))
+    return overview(org)

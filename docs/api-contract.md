@@ -39,6 +39,7 @@ Timestamps are epoch seconds.
 ## Endpoints
 | Method | Path | Body / query | Returns |
 |---|---|---|---|
+| POST | `/api/orgs` | `{slug, teams:[{name, services:[{name, category?}], people:[{name, role?}]}], dependencies:[{service, depends_on}], projects?:[{name, repo?, services}]}` | `201 {org, overview, next}`; `409` slug exists; `422 {problems:[...]}` |
 | GET | `/api/health` | – | `{ok, falkordb: true}`. Returns **503** if FalkorDB is down |
 | GET | `/api/orgs/{org}/overview` | – | `{teams:[{name, components:[...], devs:[...]}], projects:[...], counts:{sessions, solutions, live_sessions, questions, tokens_saved}}` |
 | GET | `/api/orgs/{org}/graph` | `?view=org\|memory\|all` | `{nodes: GraphNode[], links: GraphLink[]}` for the force graph |

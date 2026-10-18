@@ -192,6 +192,25 @@ PYTHONPATH=. uv run python -m eval.benchmark       # writes eval/results.md
 PYTHONPATH=. uv run python -m fleet.load           # writes eval/concurrency.md
 ```
 
+### Onboard your own company (one API call)
+Describe your teams, the services they own, how the services depend on each other, and who's on which team. Mycelium creates a new graph (`org_<slug>`) and your agents can use it right away.
+```bash
+curl -X POST https://api-production-377ba.up.railway.app/api/orgs -H 'content-type: application/json' -d '{
+  "slug": "acmecorp",
+  "teams": [
+    {"name": "Core", "services": [{"name": "api"}, {"name": "db", "category": "infra"}],
+     "people": [{"name": "Asha", "role": "backend"}, {"name": "Ben"}]},
+    {"name": "Apps", "services": [{"name": "web"}], "people": [{"name": "Chen"}]}
+  ],
+  "dependencies": [{"service": "web", "depends_on": "api"}, {"service": "api", "depends_on": "db"}],
+  "projects": [{"name": "Launch", "services": ["web", "api"]}]
+}'
+```
+- **`201`** returns the new org's overview, plus the next calls to make (start a session, recall, ask, connect Claude Code).
+- **`409`** means the slug is taken.
+- **`422`** lists *every* problem in the spec at once (unknown services in dependencies, a person on two teams, a service owned twice). Nothing is written until the whole spec is valid.
+- **Then:** `POST /api/orgs/acmecorp/sessions` with `{"dev": "Chen", "task": "..."}`, or connect Claude Code: `scripts/install_claude.sh <project_dir> Chen acmecorp https://api-production-377ba.up.railway.app`.
+
 ### Connect your own Claude Code
 ```bash
 scripts/install_claude.sh /path/to/your/project <YourName> graphhq http://localhost:8000 "Mobile 3.0"
@@ -239,7 +258,7 @@ PYTHONPATH=. uv run python -m core.importer ~/.claude/projects/<project>/<sessio
 
 ## Honest limits
 - **The data is synthetic** (Rule 6). The planted stories make the mechanisms visible; real orgs are messier.
-- **Identity is trusted:** `MYC_DEV` is configuration, not authentication. Real deployments need SSO.
+- **Identity is trusted:** `MYC_DEV` is configuration, not authentication, and any org created through `POST /api/orgs` is writable by anyone who knows its slug. Real deployments need SSO and per-org keys.
 - **Routing is a weighted heuristic** (live-on-component > past solver > owner, times PageRank), tuned on our own org.
 - **Embeddings are local and small** (bge-small) for zero-cost setup. Swapping models is a one-line change.
 - **FalkorDB versions:** the live demo runs on **FalkorDB Cloud** (free tier, v4.22.0). Locally we pin the Docker image to v4.22.1 (`:latest` on 2026-10-15). The full test suite passes on both. We haven't run it on the 6.0 Rust engine (`edge-rs`) yet.

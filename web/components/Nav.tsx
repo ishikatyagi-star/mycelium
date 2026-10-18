@@ -3,7 +3,6 @@
 import { Compass } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useOrg } from "./OrgProvider";
 import { useTour } from "./Tour";
 
 const LINKS = [
@@ -33,7 +32,6 @@ export function Logo({ size = 22 }: { size?: number }) {
 
 export default function Nav() {
   const path = usePathname();
-  const { org, setOrg, orgs, persona, setPersona, devs } = useOrg();
   const tour = useTour();
   return (
     <header className="border-b border-line bg-surface/90 backdrop-blur sticky top-0 z-30">
@@ -52,18 +50,10 @@ export default function Nav() {
             );
           })}
         </nav>
-        <div className="ml-auto flex items-center gap-2 text-sm">
-          <label className="sr-only" htmlFor="org">Organization</label>
-          <select id="org" className="input !w-auto !min-h-[36px] !py-1 !text-sm hidden sm:block" value={org} onChange={(e) => setOrg(e.target.value)}>
-            {orgs.map((o) => <option key={o} value={o}>{ORG_NAMES[o] || o}</option>)}
-          </select>
-          <label className="sr-only" htmlFor="persona">Viewing as</label>
-          <select id="persona" className="input !w-auto !min-h-[36px] !py-1 !text-sm hidden lg:block" value={persona}
-                  onChange={(e) => setPersona(e.target.value)} title="Viewing as">
-            {devs.map((d) => <option key={d.name} value={d.name}>as {d.name} · {d.team}</option>)}
-          </select>
-          <button className="btn !min-h-[36px] !py-1" onClick={() => tour.start()}>
-            <Compass size={16} aria-hidden /> <span className="hidden sm:inline">Tour</span><span className="sr-only sm:hidden">Tour</span>
+        <div className="ml-auto">
+          <button onClick={() => tour.start()}
+                  className={`btn btn-primary !min-h-[44px] !px-5 !text-[15px] shadow-md relative ${tour.seen ? "" : "tour-cta"}`}>
+            <Compass size={18} aria-hidden /> Start the tour
           </button>
         </div>
       </div>

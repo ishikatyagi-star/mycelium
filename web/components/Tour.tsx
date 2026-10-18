@@ -31,13 +31,17 @@ export const STEPS: Step[] = [
     body: "See who others rely on, and which hard-won fixes only one person holds." },
 ];
 
-type Ctx = { active: boolean; step: number; start: () => void; stop: () => void; go: (i: number) => void };
+type Ctx = { active: boolean; step: number; seen: boolean; start: () => void; stop: () => void; go: (i: number) => void };
 const TourContext = createContext<Ctx | null>(null);
 
 export function TourProvider({ children }: { children: React.ReactNode }) {
   const [active, setActive] = useState(false);
   const [step, setStep] = useState(0);
+  const [seen, setSeen] = useState(true); // assume seen until we can read storage (avoids a flash)
   const router = useRouter();
+  useEffect(() => {
+    try { setSeen(localStorage.getItem("myc.toured") === "1"); } catch { setSeen(false); }
+  }, []);
   const go = useCallback((i: number) => {
     if (i < 0 || i >= STEPS.length) {
       setActive(false);
@@ -47,10 +51,14 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
     setActive(true);
     if (window.location.pathname !== STEPS[i].path) router.push(STEPS[i].path);
   }, [router]);
-  const start = useCallback(() => go(0), [go]);
+  const start = useCallback(() => {
+    setSeen(true);
+    try { localStorage.setItem("myc.toured", "1"); } catch {}
+    go(0);
+  }, [go]);
   const stop = useCallback(() => setActive(false), []);
   return (
-    <TourContext.Provider value={{ active, step, start, stop, go }}>
+    <TourContext.Provider value={{ active, step, seen, start, stop, go }}>
       {children}
       <Suspense fallback={null}>{active && <Overlay />}</Suspense>
     </TourContext.Provider>

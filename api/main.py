@@ -453,6 +453,79 @@ def playground_implement(org: str, sid: str, body: ImplementBody):
         bad(e)
 
 
+# ---------------------------------------------------------------- onboarding: create your own org
+
+MAX_ORGS = int(os.getenv("MYC_MAX_ORGS", "100"))
+SLUG_PATTERN = r"^[a-z][a-z0-9_]{1,39}$"
+
+
+class ServiceSpec(BaseModel):
+    name: str = Field(min_length=1, max_length=80)
+    category: str = Field("", max_length=40)
+
+
+class PersonSpec(BaseModel):
+    name: str = Field(min_length=1, max_length=80)
+    role: str = Field("", max_length=80)
+
+
+class TeamSpec(BaseModel):
+    name: str = Field(min_length=1, max_length=80)
+    services: list[ServiceSpec] = []
+    people: list[PersonSpec] = []
+
+
+class DependencySpec(BaseModel):
+    service: str
+    depends_on: str
+
+
+class ProjectSpec(BaseModel):
+    name: str = Field(min_length=1, max_length=120)
+    repo: str = Field("", max_length=200)
+    services: list[str] = []
+
+
+class OrgSpec(BaseModel):
+    slug: str = Field(pattern=SLUG_PATTERN, description="lowercase letters, digits, underscores; becomes graph org_<slug>")
+    teams: list[TeamSpec]
+    dependencies: list[DependencySpec] = []
+    projects: list[ProjectSpec] = []
+
+
+@app.post("/api/orgs", status_code=201)
+def create_org(spec: OrgSpec, request: Request):
+    """Onboard a company: one call creates its graph (teams own services, services depend on services, people
+    belong to teams). Agents can then start sessions, save memory and ask the org right away."""
+    if spec.slug.startswith(("sandbox_", "test", "loadtest")) or spec.slug in PROTECTED_ORGS:
+        raise HTTPException(400, f"slug {spec.slug!r} is reserved")
+    existing = list_orgs()
+    if spec.slug in existing:
+        raise HTTPException(409, f"org {spec.slug!r} already exists")
+    if len([o for o in existing if not o.startswith("sandbox_")]) >= MAX_ORGS:
+        raise HTTPException(429, "org limit reached on this server")
+    teams = [t.model_dump() for t in spec.teams]
+    deps = [d.model_dump() for d in spec.dependencies]
+    projects = [p.model_dump() for p in spec.projects]
+    problems = O.validate_spec(teams, deps, projects)
+    if problems:
+        raise HTTPException(422, {"problems": problems})
+    o = Org(spec.slug)
+    try:
+        ensure_schema(o)
+        overview_ = O.create_org(o, teams, deps, projects)
+    except Exception:
+        o.delete()  # never leave a half-created org behind
+        raise
+    base = str(request.base_url).rstrip("/")
+    return traced({"org": spec.slug, "overview": overview_, "next": {
+        "start_agent_session": f"POST {base}/api/orgs/{spec.slug}/sessions",
+        "recall": f"POST {base}/api/orgs/{spec.slug}/recall",
+        "ask": f"POST {base}/api/orgs/{spec.slug}/ask",
+        "connect_claude_code": f"scripts/install_claude.sh <project_dir> <your name> {spec.slug} {base}",
+    }})
+
+
 # ---------------------------------------------------------------- sandbox + events
 
 @app.post("/api/sandbox")
