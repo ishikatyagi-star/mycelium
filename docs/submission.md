@@ -85,3 +85,15 @@ We wrote these up for the FalkorDB team in `docs/falkordb-notes.md`.
 - More agent clients beyond Claude Code.
 - Running our test suite on the FalkorDB 6.0 engine.
 - Importing real chat and ticket history.
+
+### Feedback: What did you like about FalkorDB?
+Vectors and the graph live in one engine, and that was the whole reason Mycelium could work. A single Cypher query does a vector search for similar past problems, then keeps going through the graph (who solved it, whether the fix was later replaced, who's allowed to see it), with no second database and no sync job. Variable-length traversals like `SUPERSEDES*1..4` and `DEPENDS_ON*1..3` made "skip fixes that broke" and "who is affected by this change" one query each, and `algo.pageRank` gave us expertise ranking in one call. One graph per company made multi-tenancy clean, and `GRAPH.COPY` let every visitor get a private sandbox copy of the demo company instantly. It was fast too: hybrid recall ran at about 3 ms locally, and 50 concurrent agents produced zero errors. `GRAPH.RO_QUERY` let us guarantee that reads can never change memory. And FalkorDB Cloud's free tier ran the same 4.22 engine as our local Docker image, so our whole test suite passed on both without changes.
+
+### Feedback: What could be improved? (if asked)
+- The Cloud free tier blocks Redis PUBLISH/SUBSCRIBE, so we built our own event bus for live updates.
+- A variable-length bound can't be a query parameter (`*1..$depth`).
+- `RO_QUERY` on a graph that doesn't exist yet returns "empty key" instead of no rows.
+- `falkordb/falkordb:latest` was still 4.22.1 even though the 6.0 announcement points to it.
+- `algo.betweenness` has no option to ignore edge direction.
+
+More detail, with workarounds, is in `docs/falkordb-notes.md`.
