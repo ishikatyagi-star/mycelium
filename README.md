@@ -8,7 +8,8 @@ Built for **Graph Hacks: Context for AI Agents** (WeMakeDevs × FalkorDB).
 **Tracks:** 02 Agent Memory & Coordination (primary) · 03 Company Brain
 
 **Links:**
-- Live API: https://api-production-377ba.up.railway.app/api/health (web app link coming)
+- **Live demo (web app):** https://web-production-76872.up.railway.app
+- Live API: https://api-production-377ba.up.railway.app/docs
 - Demo video: _(link)_
 - Blog post: _(link)_
 
@@ -108,7 +109,7 @@ The full graph model is in [`docs/graph-model.md`](docs/graph-model.md), and eve
 ## Deployment
 - **Database:** FalkorDB Cloud, free tier, AWS ap-south-1, plain RESP with a client `socket_timeout` (TLS hangs on the free tier).
 - **API and fleet:** Railway (Singapore, nearest region to the database), one Docker image with two roles (`MYC_ROLE=fleet`).
-- **Web:** Vercel.
+- **Web:** Next.js 16, also on Railway (Singapore).
 
 The public demo org is read-only for visitors' agent writes. `POST /api/sandbox` gives every visitor a private writable copy.
 

@@ -7,7 +7,7 @@ Judges should see it **working within the first 60 seconds**. One story runs thr
 - [ ] The fleet is running: `railway logs --service fleet` shows recent `started` / `answered` lines. The live org shows about 8–10 live agents.
 - [ ] **Ishika's terminal:** Claude Code open in `~/Documents/Projects/mycelium-demo-mobile` (connected as Ishika, Mobile team). Fresh session, so `.mycelium/session.json` is deleted.
 - [ ] **Yash's terminal:** Claude Code in any project, connected as Yash (Payments) via `scripts/install_claude.sh ... Yash acme <api> "Realtime Ledger"` with the write token.
-- [ ] The web app is open on the **Live org** view at 1440px, with dark mode and notifications off.
+- [ ] The web app (https://web-production-76872.up.railway.app) is open on the **Live org** view at 1440px, with dark mode and notifications off. Click **Fit** if the graph isn't centered.
 - [ ] Reset the demo state if needed. Reseeding is safe and takes 20 s:
   ```bash
   set -a; . ./.env.cloud; set +a; PYTHONPATH=. uv run python -m seed.acme
