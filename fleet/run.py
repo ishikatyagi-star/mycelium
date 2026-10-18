@@ -102,7 +102,7 @@ async def agent(dev: str, team: str, tasks: list[dict], step: float, hold: bool,
                     await call(c, "POST", f"/sessions/{sid}/outcome",
                                json={"solution_id": memories[0]["solution"]["id"], "worked": True})
                     log(dev, f"reused {memories[0]['author']['name']}'s '{memories[0]['solution']['title'][:50]}'")
-                if sc.get("ask"):
+                if sc.get("ask") and (i < len(tasks) or random.random() < 0.25):   # don't re-ask every cycle
                     await asyncio.sleep(step)
                     r = await call(c, "POST", "/ask", json={"question": sc["ask"], "session_id": sid})
                     log(dev, f"asked org -> {r['mode']}"

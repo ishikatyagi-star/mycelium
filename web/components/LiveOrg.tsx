@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { API, ago, get, tokens, type GLink, type GNode, type LiveSession } from "@/lib/api";
 import { teamColor } from "@/lib/teams";
+import { forceX, forceY } from "d3-force-3d";
 import { fitTo } from "./fit";
 import ForceGraph, { useCssVar, useSize } from "./ForceGraph";
 import NoticeModal from "./NoticeModal";
@@ -161,8 +162,11 @@ export default function LiveOrg() {
 
   // layout tuning, applied by FGInner once the graph instance exists
   const configure = useCallback((fg: any) => {
-    fg.d3Force("charge")?.strength((n: any) => (n.label === "Team" ? -500 : -190));
-    fg.d3Force("link")?.distance((l: any) => (l.type === "OWNS" ? 60 : l.type === "TOUCHES" ? 28 : 90));
+    fg.d3Force("charge")?.strength((n: any) => (n.label === "Team" ? -220 : -70)).distanceMax(260);
+    fg.d3Force("link")?.distance((l: any) => (l.type === "OWNS" ? 38 : l.type === "TOUCHES" ? 20 : 55));
+    // gentle pull to the middle so teams with no cross-team dependencies don't drift off-screen
+    fg.d3Force("x", forceX(0).strength(0.06));
+    fg.d3Force("y", forceY(0).strength(0.06));
   }, []);
 
 
@@ -199,7 +203,10 @@ export default function LiveOrg() {
             height={size.height}
             graphData={data}
             backgroundColor="rgba(0,0,0,0)"
-            cooldownTime={4000}
+            cooldownTime={6000}
+            warmupTicks={80}
+            d3AlphaDecay={0.045}
+            d3VelocityDecay={0.35}
             linkColor={(l: any) => (l.temp ? l.color : l.type === "TOUCHES" ? teamColor(nodeMap.current.get(typeof l.source === "object" ? l.source.id : l.source)?.team) + "88" : linkColor)}
             linkWidth={(l: any) => (l.temp ? 2.5 : l.type === "DEPENDS_ON" ? 1.2 : l.type === "TOUCHES" ? 1.4 : 0.6)}
             linkLineDash={(l: any) => (l.type === "OVERLAPS" ? [3, 3] : l.type === "OWNS" ? [1, 3] : null)}

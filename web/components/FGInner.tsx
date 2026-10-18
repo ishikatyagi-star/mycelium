@@ -7,7 +7,7 @@ import { fitTo } from "./fit";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // Loaded only on the client (see ForceGraph.tsx). Because next/dynamic does not forward refs, the instance is
 // handed back through `fgRef`, and layout tuning (`configure`) + auto-fit happen here, where the ref is real.
-export default function FGInner({ fgRef, configure, autoFit = true, onEngineStop, ...props }: any) {
+export default function FGInner({ fgRef, configure, autoFit = true, fitPad = 70, onEngineStop, ...props }: any) {
   const ref = useRef<any>(null);
   const userMoved = useRef(false);
   const n = props.graphData?.nodes?.length ?? 0;
@@ -26,11 +26,11 @@ export default function FGInner({ fgRef, configure, autoFit = true, onEngineStop
   useEffect(() => {
     if (!autoFit || !n) return;
     const fit = () => {
-      if (!userMoved.current && ref.current) fitTo(ref.current, sizeRef.current.nodes, sizeRef.current.w, sizeRef.current.h, 70);
+      if (!userMoved.current && ref.current) fitTo(ref.current, sizeRef.current.nodes, sizeRef.current.w, sizeRef.current.h, fitPad);
     };
-    const t1 = setTimeout(fit, 1500), t2 = setTimeout(fit, 4500);
-    return () => { clearTimeout(t1); clearTimeout(t2); };
-  }, [autoFit, n]);
+    const ts = [1200, 3500, 7000].map((ms) => setTimeout(fit, ms));
+    return () => ts.forEach(clearTimeout);
+  }, [autoFit, n, fitPad]);
   return (
     <div onWheel={() => (userMoved.current = true)} onPointerDown={() => (userMoved.current = true)}>
     <ForceGraph2D
@@ -38,7 +38,7 @@ export default function FGInner({ fgRef, configure, autoFit = true, onEngineStop
       {...props}
       onEngineStop={() => {
         // keep the whole org in view whenever the layout settles, until the user pans/zooms themselves
-        if (autoFit && !userMoved.current && ref.current) fitTo(ref.current, props.graphData?.nodes || [], props.width, props.height, 70);
+        if (autoFit && !userMoved.current && ref.current) fitTo(ref.current, props.graphData?.nodes || [], props.width, props.height, fitPad);
         onEngineStop?.();
       }}
     />

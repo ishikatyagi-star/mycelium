@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef } from "react";
+import { useMemo, useRef } from "react";
 import type { Path } from "@/lib/api";
 import { LABEL_COLOR, teamColor } from "@/lib/teams";
 import ForceGraph, { useCssVar, useSize } from "./ForceGraph";
@@ -12,18 +12,37 @@ export default function PathGraph({ path, height = 240 }: { path: Path; height?:
   const link = useCssVar("--graph-link", "rgba(228,238,233,.15)");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const fgRef = useRef<any>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const configure = useCallback((fg: any) => {
-    fg.d3Force("charge")?.strength(-420);
-    fg.d3Force("link")?.distance(95);
-  }, []);
-  const data = useMemo(
-    () => ({
-      nodes: path.nodes.map((n) => ({ ...n })),
-      links: path.links.filter((l) => path.nodes.some((n) => n.id === l.source) && path.nodes.some((n) => n.id === l.target)).map((l) => ({ ...l })),
-    }),
-    [path],
-  );
+  // Paths are small chains/trees: a fixed layered layout (BFS depth = column) is always readable,
+  // unlike a force simulation that can collapse labels on top of each other.
+  const data = useMemo(() => {
+    const ids = new Set(path.nodes.map((n) => n.id));
+    const links = path.links.filter((l) => ids.has(l.source) && ids.has(l.target)).map((l) => ({ ...l }));
+    const adj = new Map<string, string[]>();
+    for (const l of links) {
+      adj.set(l.source, [...(adj.get(l.source) || []), l.target]);
+      adj.set(l.target, [...(adj.get(l.target) || []), l.source]);
+    }
+    const depth = new Map<string, number>();
+    const start = path.nodes.find((n) => n.label === "Question" || n.label === "Task")?.id || path.nodes[0]?.id;
+    const queue = start ? [start] : [];
+    if (start) depth.set(start, 0);
+    while (queue.length) {
+      const cur = queue.shift()!;
+      for (const nb of adj.get(cur) || []) if (!depth.has(nb)) { depth.set(nb, depth.get(cur)! + 1); queue.push(nb); }
+    }
+    const cols = new Map<number, string[]>();
+    for (const n of path.nodes) {
+      const d = depth.get(n.id) ?? 0;
+      cols.set(d, [...(cols.get(d) || []), n.id]);
+    }
+    const nodes = path.nodes.map((n) => {
+      const d = depth.get(n.id) ?? 0;
+      const col = cols.get(d)!;
+      const i = col.indexOf(n.id);
+      return { ...n, fx: d * 215, fy: (i - (col.length - 1) / 2) * 30 };
+    });
+    return { nodes, links };
+  }, [path]);
   return (
     <div ref={setEl} style={{ height }} className="rounded-xl overflow-hidden border border-line bg-bg">
       <ForceGraph
@@ -32,8 +51,8 @@ export default function PathGraph({ path, height = 240 }: { path: Path; height?:
         height={height}
         graphData={data}
         backgroundColor="rgba(0,0,0,0)"
-        cooldownTicks={120}
-        configure={configure}
+        cooldownTicks={1}
+        fitPad={28}
         linkColor={() => link}
         linkWidth={1.4}
         linkDirectionalArrowLength={4}
@@ -59,8 +78,10 @@ export default function PathGraph({ path, height = 240 }: { path: Path; height?:
           ctx.arc(n.x, n.y, r, 0, 2 * Math.PI);
           ctx.fillStyle = color;
           ctx.fill();
-          const text = `${n.label}: ${String(n.name).slice(0, 38)}`;
-          ctx.font = `${11 / scale}px ui-sans-serif, system-ui`;
+          const name = String(n.name);
+          const text = n.label === "Session" ? "agent session" : ["Component", "Dev", "Team", "Project"].includes(n.label)
+            ? name : `${n.label}: ${name.length > 24 ? name.slice(0, 23) + "…" : name}`;
+          ctx.font = `${Math.max(9, 11 / scale)}px ui-sans-serif, system-ui`;
           ctx.fillStyle = label;
           ctx.textAlign = "center";
           ctx.fillText(text, n.x, n.y + r + 10 / scale);
