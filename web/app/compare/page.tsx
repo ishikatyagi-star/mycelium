@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import CompareVisual from "@/components/CompareVisual";
 import MemoryCard from "@/components/MemoryCard";
 import { useOrg } from "@/components/OrgProvider";
 import { CypherTrace, ErrorNote, Spinner } from "@/components/ui";
@@ -21,6 +22,7 @@ export default function ComparePage() {
   const { org, persona } = useOrg();
   const presets = PRESETS[org] || PRESETS.graphhq;
   const [q, setQ] = useState("");
+  const [asked, setAsked] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [res, setRes] = useState<{ vector_only: Memory[]; mycelium: Memory[]; trace: Trace } | null>(null);
@@ -31,6 +33,7 @@ export default function ComparePage() {
     setErr(null);
     try {
       setRes(await post(`/api/orgs/${org}/compare`, { query: text, as_dev: persona, k: 3 }));
+      setAsked(text);
     } catch (e) {
       setErr((e as Error).message);
     } finally {
@@ -66,6 +69,8 @@ export default function ComparePage() {
               An agent would apply the fix that already failed. Mycelium returns its replacement instead.
             </div>
           )}
+          <CompareVisual query={asked} vector={res.vector_only} graph={res.mycelium} />
+          <h2 className="font-semibold pt-2">The full answers</h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <section className="space-y-3">
               <h2 className="font-semibold text-muted">Vector-only <span className="text-xs font-normal">(nearest past problem → its solution)</span></h2>
