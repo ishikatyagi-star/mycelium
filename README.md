@@ -1,4 +1,4 @@
-# Mycelium 🍄
+# Mycelium
 
 **One shared context graph for every AI agent in a company, built on [FalkorDB](https://falkordb.com).**
 
@@ -16,10 +16,67 @@ Built for **Graph Hacks: Context for AI Agents** (WeMakeDevs × FalkorDB).
 ---
 
 ## Try it in 2 minutes
-- **Story** (`/`): the problem, who's who at our demo company **Graph HQ**, and how Mycelium solves it.
-- **▶ Take the tour**: a guided walkthrough that points at the exact place in the product where each thing happens.
+- **Overview** (`/`): the problem, our demo company **Graph HQ**, and how Mycelium solves it.
+- **Tour** (button in the nav): a guided walkthrough that points at the exact place in the product where each thing happens.
 - **Playground** (`/playground`): six Graph HQ engineers whose agents are mid-chat, each about to re-solve something the org already solved. Choose *solve from scratch* (replays what it cost the first time) or *Ask Mycelium first* (watch the memory fetch step by step: vector search → graph walk past stale fixes → context → rank and credit, with the real Cypher), then *Implement this*.
 - **Live org** (`/live`): every agent running right now, change ripples and agent-to-agent questions in real time.
+
+## The graph map
+One FalkorDB graph per company. The arrows are the relationships Mycelium queries.
+
+```mermaid
+flowchart LR
+  Team -->|OWNS| Component
+  Component -->|DEPENDS_ON| Component
+  Dev -->|MEMBER_OF| Team
+  Dev -->|RAN| Session
+  Session -->|TOUCHES| Component
+  Session -->|WORKED_ON| Task
+  Session -->|PRODUCED| Solution
+  Solution -->|SOLVES| Task
+  Solution -->|SUPERSEDES| Solution
+  Solution -->|BUILDS_ON| Solution
+  Solution -->|TAUGHT| Lesson
+  Solution -->|FAILED_WITH| Error
+  Session -->|REUSED| Solution
+  Dev -->|CREDITS| Dev
+  Dev -->|ASKED| Question
+  Question -->|ROUTED_TO| Session
+  Answer -->|ANSWERS| Question
+  Answer -->|BECAME| Solution
+  Notice -->|AFFECTS| Component
+  Notice -->|DELIVERED_TO| Session
+```
+- **Session** is one run of one AI agent. It is both memory (what it produced) and presence (what it touches right now).
+- **Task** carries a vector embedding, so "similar problems" is a FalkorDB vector-index query. Everything after that is graph traversal.
+- Full model, properties and indexes: [`docs/graph-model.md`](docs/graph-model.md). Every query the product runs: [`docs/cypher.md`](docs/cypher.md).
+
+## The graph doing the work
+Three things the product does that only the graph can answer, each with the query behind it and what you can watch in the live demo.
+
+**1. Skip a fix that later broke** (Playground → Neha → *Ask Mycelium first*; or Vector vs graph)
+```cypher
+OPTIONAL MATCH p = (newer:Solution)-[:SUPERSEDES*1..4]->(s0:Solution {id:$id})
+```
+Vector search returns *"Retry once after refreshing the token on 401"* (similarity 0.89), which failed in production with a 429 refresh storm. The graph walks `SUPERSEDES` to Yash's single-flight fix and attaches the `FAILED_WITH` error and dead-end `Lesson`s. **Vector-only 0/12, Mycelium 12/12.**
+
+**2. Warn exactly the agents a change affects** (Live org → *Announce a change*)
+```cypher
+MATCH p = (dep:Component)-[:DEPENDS_ON*1..3]->(:Component {name:$c})
+MATCH (d:Dev)-[:RAN]->(s:Session {status:'live'})-[:TOUCHES]->(dep)
+```
+In one run, a change to `token-service` reached Meera (same service), Priya (`auth-gateway`, 1 hop), Tom and Rohan (2 hops) and Neha (`offline-sync`, 3 hops), and no one working on unrelated services. **Precision and recall 1.0** across our benchmark impact cases.
+
+**3. Route a question to whoever knows, right now** (Ask → *Ask a person or agent*)
+```cypher
+MATCH (d:Dev)-[:RAN]->(s:Session {status:'live'})-[:TOUCHES]->(c:Component {name:cw.name})
+CALL algo.pageRank('Dev','CREDITS') YIELD node, score
+```
+*"Is anyone rotating the token-service signing keys right now?"* goes to Meera's live agent, which is touching `token-service`, with the path shown. **8/8 vs 4/8** for nearest-neighbour routing.
+
+Every API response includes the exact Cypher it ran (the **Show Cypher** panel in the UI).
+
+**Removal test:** with FalkorDB stopped, every endpoint returns `503` (`tests/test_api.py::test_removal_test_db_down_gives_503`). There's no cache and no other store.
 
 ## The problem
 A company today runs dozens of AI agents: every developer, on every team, across many components. **Each one is an island.**
@@ -62,8 +119,6 @@ The questions agents need answered are relationships:
 
 Similarity search can find text that *looks* related. Only the graph knows that a fix was superseded, who is live on what, and what depends on what.
 
-**Removal test:** take FalkorDB away and Mycelium does nothing. Every endpoint returns `503` (`tests/test_api.py::test_removal_test_db_down_gives_503`). There is no cache and no fallback store. Sessions, presence, memory, messages and notices all live only in the graph.
-
 ## Results (`eval/results.md`, reproducible)
 Same embeddings and the same FalkorDB vector index on both sides. The only difference is whether the graph is used.
 
@@ -85,7 +140,7 @@ flowchart LR
   subgraph Agents
     CC1[Claude Code: Ishika / Mobile] -- MCP + hooks --> API
     CC2[Claude Code: Yash / Payments] -- MCP + hooks --> API
-    F[Fleet: 10 simulated agents across 5 teams, Grok] --> API
+    F[Fleet: 10 simulated agents across 5 teams, LLM via Groq] --> API
   end
   W[Web app: live org, recall, compare, threads, brain] -- REST + SSE --> API
   API[Mycelium API, FastAPI] -- Cypher, RO_QUERY for reads --> DB[(FalkorDB: one graph per org)]
