@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { post, type Dev, type Path, type Trace } from "@/lib/api";
 import { useOrg } from "./OrgProvider";
-import PathGraph from "./PathGraph";
 import { CypherTrace, DevBadge, ErrorNote, Spinner } from "./ui";
 
 type Impact = {
@@ -41,7 +40,7 @@ export default function NoticeModal({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-start justify-center p-4 overflow-auto" onClick={onClose}>
+    <div className="fixed inset-0 z-[70] bg-black/50 flex items-start justify-center p-4 overflow-auto" onClick={onClose}>
       <div className="card w-full max-w-2xl p-5 space-y-4 mt-10" onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-between items-start">
           <div>
@@ -76,7 +75,6 @@ export default function NoticeModal({ onClose }: { onClose: () => void }) {
                 <span className="text-xs text-muted font-mono">{d.path.nodes.filter((n) => n.label === "Component").map((n) => n.name).join(" → ")}</span>
               </div>
             ))}
-            {res.impact[0] && <PathGraph path={{ nodes: res.impact.flatMap((d) => d.path.nodes).filter((n, i, a) => a.findIndex((x) => x.id === n.id) === i), links: res.impact.flatMap((d) => d.path.links) }} height={260} />}
             <CypherTrace trace={res.trace} />
           </div>
         )}

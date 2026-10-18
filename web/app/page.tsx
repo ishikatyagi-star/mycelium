@@ -115,7 +115,7 @@ export default function OverviewPage() {
       </section>
 
       {/* proof */}
-      <section>
+      <section data-tour="proof">
         <div className="eyebrow mb-4">Measured, not claimed</div>
         <div className="card grid grid-cols-2 lg:grid-cols-4 divide-x divide-y lg:divide-y-0 divide-line">
           {[

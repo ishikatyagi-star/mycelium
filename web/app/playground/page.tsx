@@ -3,6 +3,7 @@
 import { AlertTriangle, Check, Folder, Network, Wrench } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useOrg } from "@/components/OrgProvider";
+import { useTourTarget } from "@/components/Tour";
 import { DevBadge, ErrorNote, PageHeader, Spinner } from "@/components/ui";
 import { ago, effort, get, post, tokens, type Dev, type Memory } from "@/lib/api";
 import { teamColor } from "@/lib/teams";
@@ -170,6 +171,10 @@ export default function PlaygroundPage() {
       setBusy(false);
     }
   };
+
+  // the tour's "how the memory is found" step runs Ask Mycelium first if the viewer hasn't yet
+  const tourAt = useTourTarget();
+  useEffect(() => { if (tourAt === "pipeline" && s && mode !== "memory" && !busy) { setExtra([]); askMemory(); } }, [tourAt, s?.session_id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const m = staged?.memory;
   const lastAgent = s?.transcript.filter((t) => t.role === "agent").at(-1)?.text;

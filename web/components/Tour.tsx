@@ -29,7 +29,16 @@ export const STEPS: Step[] = [
     body: "A vector search returns the closest match, even one that already failed. The graph knows it was replaced." },
   { path: "/brain", target: "experts", title: "Who knows what",
     body: "See who others rely on, and which hard-won fixes only one person holds." },
+  { path: "/", target: "proof", title: "Measured, not claimed",
+    body: "Same data, same vector index, with and without the graph. Any company can onboard with one API call." },
 ];
+
+/** The tour step currently shown (its target), or null when the tour is closed. Pages use it to start
+ *  the animation a step describes, so pressing Next tells the story by itself. */
+export function useTourTarget(): string | null {
+  const { active, step } = useTour();
+  return active ? STEPS[step].target : null;
+}
 
 type Ctx = { active: boolean; step: number; seen: boolean; start: () => void; stop: () => void; go: (i: number) => void };
 const TourContext = createContext<Ctx | null>(null);
@@ -84,9 +93,12 @@ function Overlay() {
       const el = path === s.path ? document.querySelector(`[data-tour="${s.target}"]`) : null;
       if (el) {
         if (!scrolled) {
-          el.scrollIntoView({ block: "center", behavior: "smooth" });
+          const r = el.getBoundingClientRect();
+          if (r.height > window.innerHeight * 0.5) window.scrollBy({ top: r.top - 88, behavior: "smooth" }); // keep it below the sticky nav
+          else el.scrollIntoView({ block: "center", behavior: "smooth" });
           scrolled = true;
         }
+
         setRect(el.getBoundingClientRect());
       } else setRect(null);
       raf = window.setTimeout(find, 250) as unknown as number;
@@ -114,7 +126,13 @@ function Overlay() {
     const below = rect.bottom + 14 + 220 < vh;
     top = below ? rect.bottom + 14 : Math.max(16, rect.top - 230);
     left = Math.min(Math.max(16, rect.left), vw - cardW - 16);
-    if (rect.height > vh * 0.6) { top = Math.max(16, rect.top + 16); left = Math.min(rect.right - cardW - 16, vw - cardW - 16); }
+    if (rect.height > vh * 0.6) {
+      // tall panel: sit beside it (left if there's room, else right), never on top of what it explains
+      top = Math.max(88, Math.min(rect.top + 16, vh - 260));
+      if (rect.left > cardW + 32) left = rect.left - cardW - 20;
+      else if (vw - rect.right > cardW + 32) left = rect.right + 20;
+      else { left = Math.min(rect.right - cardW - 16, vw - cardW - 16); top = vh - 250; }
+    }
   }
 
   return (

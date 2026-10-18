@@ -1,59 +1,45 @@
-# Demo video script (target 2:45, hard cap 3:00)
+# Demo video script: the tour *is* the story (~2:50, hard cap 3:00)
 
-Judges want to see it **working, not slides**, within the first 60 seconds. One story runs throughout: Neha's agent is about to repeat Yash's 3-day token-refresh bug.
+Record the whole video by pressing **Next** through the built-in tour. Each step highlights one part of the product and is one beat of the story: **Neha's AI agent is about to repeat a 3-day mistake, and Mycelium stops it.** Two steps play their animation by themselves (6 and 10), so you only ever click where the script says.
 
-**Deadline: tonight, Oct 18, 11:59 PM IST.** Record by about 19:30.
+**Deadline: tonight, Oct 18, 11:59 PM IST.**
 
-## Pre-flight (10 minutes before recording)
-- [ ] `curl https://api-production-377ba.up.railway.app/api/health` returns `ok: true`.
-- [ ] Open https://web-production-76872.up.railway.app/live and check that the header shows about 10 **agents live** (the fleet is running).
-- [ ] Optional reset, if the demo data looks messy. It takes about 20 s and is safe:
+## Before you hit record (5 minutes)
+- [ ] Open https://web-production-76872.up.railway.app in a **private/incognito window**. That gives fresh state: the tour button pulses and the Playground opens on Neha.
+- [ ] Window at 1440×900 (or 1920×1080), zoom 100%, bookmarks bar hidden, notifications off.
+- [ ] Glance at `/live`: the header should show about 10 **agents live**. Then go back to the Overview (`/`).
+- [ ] Optional reset if the demo data looks messy (20 s, safe):
   ```bash
   set -a; . ./.env.cloud; set +a; PYTHONPATH=. uv run python -m seed.graphhq
   ```
-- [ ] Browser at 1440×900 (or 1920×1080), zoom 100%, bookmarks bar hidden, notifications off.
-- [ ] Optional real-tool shot: Claude Code open in `~/Documents/Projects/mycelium-demo-mobile` (connected to Graph HQ), with `.mycelium/session.json` deleted for a fresh session. Terminal font 16pt+.
+- [ ] Navigate with **Next** or the **→** key. **Don't press Esc** (it closes the tour). Close the change dialog with its **×**.
 
-## Shots
+## The script
 
-**0:00–0:12 · Hook** *(Overview page `/`)*
-- Show the headline, then the "3 days" card.
-> "Every engineer now has an AI agent, and every agent starts blank. So agents keep solving problems the company already solved."
+| # | Time | On screen (tour step) | You do | You say |
+|---|---|---|---|---|
+| — | 0:00–0:08 | Overview headline | Nothing yet | "Every engineer now works with an AI agent. And every one of those agents starts each session knowing nothing about what the company already learned." |
+| 1 | 0:08–0:18 | **The problem** | Click **Start the tour** | "So agents keep solving problems their company already solved, and they can't see what other agents are doing right now." |
+| 2 | 0:18–0:30 | **Graph HQ, our demo company** | Next | "Meet Graph HQ: 14 engineers, five teams, 17 services, four months of agent history, all in one graph in FalkorDB. Let's follow Neha, on the Mobile team." |
+| 3 | 0:30–0:40 | **Agents about to repeat work** | Next | "Right now, six agents here are about to solve something a teammate has already solved. Neha's is one of them." |
+| 4 | 0:40–0:55 | **What the agent plans to do** (the chat) | Next | "Users are getting logged out. Her agent's plan: retry on 401. What it doesn't know is that ten weeks ago that exact fix caused an outage, and Yash on Payments spent three days and 14 attempts fixing it." |
+| 5 | 0:55–1:10 | **Your choice** | Next, then click **Solve from scratch**; let two attempts play | "Without Mycelium, the agent walks straight into the same dead ends. That's the three days and 200,000 tokens Yash already spent, about to be spent again." |
+| 6 | 1:10–1:35 | **How the memory is found** (plays by itself) | Next; wait for the green answer, then click **Implement this** | "With Mycelium, the agent asks the company first. It finds similar problems, skips the fix that broke, and brings back who solved it and what not to do. One click, and it implements Yash's fix, with credit." |
+| 7 | 1:35–1:47 | **The company, live** | Next | "Now zoom out. Every dot is an AI agent working at Graph HQ at this moment, attached to the services it touches." |
+| 8 | 1:47–2:05 | **Change something** | Next, click **Announce a change** → **Send to affected agents**; show the list, then **×** | "Meera is rotating the token-signing keys. Mycelium follows the dependencies and warns only the agents whose work depends on it: one, two, three hops away. Nobody else gets interrupted." |
+| 9 | 2:05–2:15 | **Agents asking agents** (activity feed) | Next | "Agents ask each other too. A question goes to whoever is working on that service right now, and every answer becomes memory." |
+| 10 | 2:15–2:32 | **Why it needs a graph** (plays by itself) | Next; let the animation run | "Why a graph? Vector search grabs the closest look-alike, which is the broken fix. The graph knows it was replaced, and walks to the fix that works." |
+| 11 | 2:32–2:40 | **Who knows what** | Next | "Over time the company learns who really knows what, and which hard-won fixes only one person holds." |
+| 12 | 2:40–2:52 | **Measured, not claimed** | Next; then **Finish** | "Measured: the right fix 12 times out of 12, versus zero for vector search. Any company can onboard with one API call. Mycelium: one memory for every AI agent, built on FalkorDB." |
 
-**0:12–0:55 · The fix nobody remembered** *(Playground → Neha, already selected)*
-1. Scroll the chat. The agent's plan is "retry on 401".
-   > "Neha's agent is about to retry on 401. Ten weeks ago that exact fix caused an outage, and Yash spent 3 days fixing it."
-2. Click **Solve from scratch**. Let 2 attempts play while the token and time counters climb.
-   > "Without Mycelium, it repeats the dead ends."
-3. Pick Neha again (resets), then click **Ask Mycelium first**. Let the right panel play. Pause on the path strip: Neha's problem → similar task → **stale fix (struck out)** → current fix → Yash.
-   > "With Mycelium, it checks the company's memory first. It finds the problem, skips the fix that broke, and brings back who solved it and what not to do."
-4. Click **Implement this**.
-   > "And it implements Yash's fix, with credit."
+## If something goes wrong
+- **Step 6 is slow:** keep talking over the steps lighting up. If *Implement this* takes more than ~5 s, skip it; the green "already solved this" message makes the point.
+- **The graph on step 7 looks crowded:** the tour card's area is fine to talk over, or click **Fit** after the step.
+- **The activity feed (step 9) is quiet:** the fleet acts every ~15 s; just describe it, the earlier events are already listed.
+- **You closed the tour by accident:** click **Start the tour** and press → until you're back at the step (they're fast).
 
-**0:55–1:20 · Why it needs a graph** *(Vector vs graph → first example chip)*
-- Let the animation play to step 5.
-> "Same question, same index. Vector search grabs the closest look-alike, which is the broken fix. The graph knows it was replaced, follows SUPERSEDES to the working one, and attaches the error and the dead ends."
+## Optional extra shot (after the tour, ~20 s): it works in real tools
+Claude Code in `~/Documents/Projects/mycelium-demo-mobile`, prompt: `Users get logged out randomly when several requests hit 401 at the same time. Fix api.ts.` Show the injected `[Mycelium] The org has solved similar problems before` context.
+> "And it's the same inside Claude Code: an MCP server and hooks put the company's memory straight into the agent."
 
-**1:20–1:45 · It works in real tools** *(optional: Claude Code terminal; skip if not set up)*
-- Prompt: `Users get logged out randomly when several requests hit 401 at the same time. Fix api.ts.`
-- Show the injected `[Mycelium] The org has solved similar problems before` context, with Yash's fix and the dead ends.
-> "Same thing inside Claude Code. An MCP server and hooks put the company's memory straight into the agent."
-- **If you skip this shot,** spend the time on the Live org instead.
-
-**1:45–2:15 · Agents coordinating, live** *(Live org `/live`)*
-1. > "Every dot is an agent working right now."
-2. Click **Announce a change** → `token-service` (prefilled) → **Send to affected agents**. Show the list: same service, 1 hop, 2 hops, 3 hops. Close; the red ripple shows on the graph.
-   > "Change a service, and only the agents whose work depends on it are warned. The graph walks DEPENDS_ON."
-3. Point at the Activity feed: agents asking each other, answers arriving.
-
-**2:15–2:35 · Proof** *(Overview → "Measured, not claimed")*
-> "12 out of 12 current fixes versus 0 for vector search. Questions reach the right person 8 out of 8 times. Fifty agents at once, zero errors."
-- Optional: on any result, open **Show Cypher** for 2 seconds.
-
-**2:35–2:45 · Close** *(Overview hero)*
-> "Any company can onboard with one API call. Mycelium: one memory for every AI agent, built on FalkorDB."
-
-## Backup lines (if something is slow live)
-- If *Implement this* is slow, cut after the green "already solved this" message. It already makes the point.
-- If the Live graph looks crowded, click **Fit**.
-- If no agent activity shows in the feed, wait about 15 s (the fleet acts every ~15 s), or switch to **Threads** for earlier answered questions.
+Only add it if the main video is under 2:40, so the total stays under 3:00.
