@@ -4,6 +4,16 @@ All queries live in `core/*.py`, are parameterised, and are executed through `Or
 or `Org.write`. Every API response includes a `trace` with the exact queries that produced it, which is
 what the UI's **Show Cypher** panel displays.
 
+## How we write Cypher (and why)
+- **Parameterised, always.** User and agent text only enters as `$params`. The only inlined values are a variable-length bound (validated as an integer from 1 to 4, because FalkorDB can't parameterise `*1..$n`) and labels from our own constants.
+- **Reads are read-only.** All reads go through `GRAPH.RO_QUERY`, so the read path can't change memory.
+- **The LLM never writes Cypher.** Agents call a fixed catalogue of tools (MCP), and each tool runs a query we wrote. That rules out invented labels, broken syntax and injection, which is the main failure mode of text-to-Cypher.
+- **Idempotent writes.** `MERGE` for every entity and relationship. Re-running a save, a seed or a heartbeat doesn't create duplicates.
+- **Batching with `UNWIND`.** Lists (libraries, lessons, candidate ids, components) are written and read in one round trip, not one query per item.
+- **Vector and graph in one query.** `db.idx.vector.queryNodes` finds similar tasks, and the same query continues with `MATCH` (visibility, authorship) instead of fetching rows and joining in Python.
+- **Indexes up front.** Range indexes on every lookup key and vector indexes on `Task` / `Question` are created idempotently at startup (`core/schema.py`).
+- **Seeding is code, not a `.cypher` dump.** The demo org is rebuilt in about 20 seconds with `python -m seed.graphhq`, through the same functions the product uses. Data loss is a re-run, not a manual re-import.
+
 ## The five queries that matter most
 
 **1. Hybrid recall, step 1: vector candidates, with visibility enforced in the graph** (`recall.vector_candidates`)
