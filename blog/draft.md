@@ -2,7 +2,7 @@
 title: "Mycelium: Your Agents Keep Re-Solving Last Quarter's Bugs. We Gave the Whole Company One Graph."
 published: false
 tags: falkordb, ai, agents, graphdatabase
-cover_image: # TODO: screenshot of the live org view
+cover_image: # TODO before publishing: screenshot of the Playground after "Ask Mycelium first"
 ---
 
 > **TL;DR:** Mycelium is one shared context graph, on FalkorDB, for every AI agent in a company.
@@ -17,15 +17,15 @@ cover_image: # TODO: screenshot of the live org view
 
 ## The bug you already fixed
 
-Six weeks ago, Yash on the Payments team spent three days on a token-refresh race. Parallel requests all got `401`, each fired its own refresh, and because refresh tokens rotate on use, the refreshes invalidated each other and users got logged out at random. He tried 14 things. Jittered retries only delayed the storm. Raising the token endpoint's rate limit hid it in staging and not in prod. The fix was a single-flight refresh.
+Ten weeks ago, Yash on the Payments team spent three days on a token-refresh race. Parallel requests all got `401`, each fired its own refresh, and because refresh tokens rotate on use, the refreshes invalidated each other and users got logged out at random. He tried 14 things. Jittered retries only delayed the storm. Raising the token endpoint's rate limit hid it in staging and not in prod. The fix was a single-flight refresh.
 
-Today Ishika, on the Mobile team, opens Claude Code and types: *"users get logged out randomly when several requests hit 401 at the same time."*
+Today Neha, on the Mobile team, opens Claude Code and types: *"users get logged out randomly when several requests hit 401 at the same time."*
 
 Her agent has never heard of Yash's three days. Neither has she. The repo docs were never updated. So the agent starts from zero, and it confidently suggests "retry once after refreshing the token on 401". That is exactly the naive fix that caused the storm in the first place, and it's sitting in the team's history marked as the thing that failed.
 
 That's one direction of the problem: **across time, engineering history repeats, and agents can't see it.**
 
-The other direction is happening right now. While Ishika's agent works, Meera's agent on the Identity team is rotating the token-signing keys that Ishika's app caches. Kabir's agent on Data is renaming a field in the event schema that three other teams parse. **Across the org, every agent is an island.** Duplicate work goes unnoticed, breaking changes go unannounced, and the agent that has the answer is on another team.
+The other direction is happening right now. While Neha's agent works, Meera's agent on the Identity team is rotating the token-signing keys that the mobile app caches. Kabir's agent on Data is renaming a field in the event schema that three other teams parse. **Across the org, every agent is an island.** Duplicate work goes unnoticed, breaking changes go unannounced, and the agent that has the answer is on another team.
 
 ## What Mycelium does
 
@@ -39,6 +39,15 @@ Mycelium (named after the fungal networks that connect trees in a forest) gives 
 - **Agents talk to agents.** `ask_org` answers from memory first. Otherwise the graph routes the question to the agent that's **live on the relevant component right now**, or to the owners or past solvers, and shows the path. The answer becomes memory, so nobody has to ask again.
 - **Change propagation.** Announce a change to `token-service`, and every live agent whose work *depends on it* is warned. Nobody else is.
 - **Company brain.** Who knows X (PageRank over who credits whom), knowledge at risk (hard fixes only one person has ever touched), tokens saved per team.
+
+## See it in 2 minutes
+The web demo is built around one company, **Graph HQ**: 14 engineers, 5 teams, 17 services and 4 months of agent history.
+- **Start the tour** (top right) walks you through the product and points at the exact place where each thing happens.
+- **Playground:** six engineers whose agents are mid-chat, each about to re-solve something a teammate already solved. In four of the six, the agent's own plan is the fix that already failed. Choose:
+  - *Solve from scratch:* it replays the real dead ends and counts up what the problem cost the first time.
+  - *Ask Mycelium first:* watch the memory being found step by step: similar problems → skip the fix that broke → who solved it and what didn't work → ranked and credited. Each step shows its real Cypher. Then *Implement this*.
+- **Vector vs graph:** the same question animated side by side. Vector search grabs the closest look-alike; the graph walks past it to the fix that replaced it.
+- **Live org:** every agent working right now. Announce a change and watch it reach only the agents that depend on it.
 
 And it lives **inside the tools developers already use**: an MCP server with 13 tools plus Claude Code hooks, so memories and incoming messages show up in the agent's context without anyone asking.
 
@@ -141,13 +150,25 @@ One command connects any project:
 scripts/install_claude.sh ~/code/mobile-app Ishika graphhq https://api-production-377ba.up.railway.app "Mobile 3.0"
 ```
 
+## Onboard a company in one call
+A team describes its teams, the services they own, how the services depend on each other, and who's on which team. One request creates its graph:
+```bash
+curl -X POST https://api-production-377ba.up.railway.app/api/orgs -H 'content-type: application/json' -d '{
+  "slug": "acmecorp",
+  "teams": [{"name": "Core", "services": [{"name": "api"}, {"name": "db"}], "people": [{"name": "Asha"}]},
+            {"name": "Apps", "services": [{"name": "web"}], "people": [{"name": "Chen"}]}],
+  "dependencies": [{"service": "web", "depends_on": "api"}, {"service": "api", "depends_on": "db"}]
+}'
+```
+The whole spec is validated before anything is written. An invalid spec gets back every problem at once (an unknown service, a person on two teams), and the org is never half-created. Agents can start sessions, save fixes and ask the org immediately.
+
 ## A company that's always busy
 A demo of coordination needs agents to coordinate *with*, so a fleet of 10 simulated agents across 5 teams (Identity, Payments, Data, Mobile, Platform) runs around the clock against the same API that real Claude Code sessions use.
 - They start tasks, reuse what the org knows, and ask the org when they're stuck.
 - They announce changes, and save what they learn.
 - When a question is routed to one of them, it answers from its own task context plus org memory, using an LLM (Groq, `gpt-oss-120b`), and says so when it doesn't know.
 
-When Ishika's real Claude Code session asks *"is anyone rotating the token-service signing keys right now?"*, the graph routes it to Meera's live agent. The path is `Question → token-service ← TOUCHES ← Meera's session`. The answer lands back in Ishika's context through the hook.
+When a real Claude Code session asks *"is anyone rotating the token-service signing keys right now?"*, the graph routes it to Meera's live agent. The path is `Question → token-service ← TOUCHES ← Meera's session`. The answer lands back in the asking agent's context through the hook.
 
 ## Results
 We built a small benchmark ([`eval/results.md`](https://github.com/ishikatyagi-star/mycelium/blob/master/eval/results.md)). Both sides use the same embeddings and the same FalkorDB vector index. The only difference is whether the graph is used.
@@ -183,7 +204,8 @@ Ask it *"Railway deploy fails after moving the service to another region"* and y
 
 ## Honest limits
 - The demo company is synthetic (Rule 6). Real orgs are messier.
-- Identity is configuration (`MYC_DEV`), not authentication. Production would need SSO.
+- Identity is configuration (`MYC_DEV`), not authentication, and an org created through the API is writable by anyone who knows its slug. Production would need SSO and per-org keys.
+- The playground's chat transcripts are written scenarios. The memory search, graph walk and *Implement this* behind them are real calls against the live graph and LLM.
 - Routing is a weighted heuristic tuned on our own org.
 - Embeddings are small and local (bge-small) so setup costs nothing.
 - We ran on FalkorDB 4.22 (Cloud free plus a pinned Docker image) and haven't tested the 6.0 engine yet.
@@ -194,15 +216,15 @@ Ask it *"Railway deploy fails after moving the service to another region"* and y
 - MCP (Python SDK) plus Claude Code hooks
 - fastembed (bge-small)
 - Groq for fleet agents and transcript extraction
-- Next.js (on Railway)
+- Next.js 16 (on Railway), Plus Jakarta Sans, Lucide icons; the design system came from the UI/UX Pro Max skill
 - Railway
 
 ## AI disclosure
-We built Mycelium with Claude Code. Ishika's session did the core, API, MCP, fleet and eval; Yash's session did the web app. We directed the product, made the calls, reviewed and tested everything, and can explain every query. Details are in [`docs/ai-disclosure.md`](https://github.com/ishikatyagi-star/mycelium/blob/master/docs/ai-disclosure.md).
+We built Mycelium with Claude Code, which wrote most of the code: core, API, MCP server, hooks, fleet, eval and the web app. We directed the product, made the calls, reviewed and tested everything, and can explain every query. Details are in [`docs/ai-disclosure.md`](https://github.com/ishikatyagi-star/mycelium/blob/master/docs/ai-disclosure.md).
 
 ## Try it
 - **Live:** https://web-production-76872.up.railway.app
 - **Run it locally:** `docker compose up -d && uv sync && PYTHONPATH=. uv run python -m seed.graphhq && PYTHONPATH=. uv run uvicorn api.main:app`
-- **Connect your own Claude Code:** `scripts/install_claude.sh <your project> <your name>`
+- **Onboard your own company:** `POST /api/orgs` (see above), then connect Claude Code: `scripts/install_claude.sh <your project> <your name> <your org slug> <api url>`
 
 *Built by Ishika Tyagi and Yash for Graph Hacks 2026.*

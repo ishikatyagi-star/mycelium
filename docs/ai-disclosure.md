@@ -4,13 +4,15 @@ Graph Hacks rules require disclosing AI coding assistance. We used it heavily, a
 
 ## Tools used
 - **Claude Code (Claude Opus)** wrote most of the code for `core/`, `api/`, `mcp_server/`, `hooks/`, `fleet/`, `seed/`, `eval/`, `tests/` and the docs. It worked in Ishika's session.
-- **Claude Code** in Yash's session built `web/` against the API contract.
-- **xAI Grok** runs *inside the product*. It does three jobs:
+- **Claude Code** (Ishika's session) also built `web/`. Yash's session was planned to build it, but it hadn't started by noon on Oct 18, so Ishika's session took it over.
+- **An LLM via Groq (`openai/gpt-oss-120b`)** runs *inside the product*. It does four jobs:
   - It answers questions as simulated fleet agents.
   - It drafts memory entries for fleet agents.
   - It extracts reusable knowledge from imported transcripts.
+  - It writes the *Implement this* answer in the web playground.
 
-  Every one of these calls has a deterministic fallback. Grok proposes; the write gate (plain code) decides what is stored.
+  Every one of these calls has a deterministic fallback. The LLM proposes; the write gate (plain code) decides what is stored.
+- **UI/UX Pro Max** (an open-source Claude skill) generated the design system the web app follows: style, palette, type scale and accessibility checklist.
 
 ## What the humans did
 - **Problem framing and product direction (Ishika):**
@@ -24,7 +26,7 @@ Graph Hacks rules require disclosing AI coding assistance. We used it heavily, a
   - Deployment.
   - What the demo must prove.
 - **Review and verification:** we read the graph model and the queries, and ran the tests and benchmark. Every milestone was walked through and explained before moving on.
-- **The web experience and the demo video (Yash).**
+- **The demo video, blog and submission (Yash).**
 
 ## What we can explain without the AI
 - The graph model (`docs/graph-model.md`) and why each relationship exists.

@@ -182,7 +182,7 @@ docker compose up -d                               # FalkorDB v4.22.1 (pinned) +
 uv sync
 PYTHONPATH=. uv run python -m seed.graphhq            # synthetic org "graphhq": 5 teams, 17 components, 14 devs, ~70 sessions
 PYTHONPATH=. uv run uvicorn api.main:app --port 8000
-PYTHONPATH=. uv run python -m fleet.run --hold     # optional: 10 live simulated agents (XAI_API_KEY in .env for Grok answers)
+PYTHONPATH=. uv run python -m fleet.run --hold     # optional: 10 live simulated agents (LLM_API_KEY in .env: Groq or xAI key)
 cd web && npm install && npm run dev               # http://localhost:3001 (see web/README)
 ```
 Tests (against a real FalkorDB) and the benchmarks:
@@ -264,7 +264,7 @@ PYTHONPATH=. uv run python -m core.importer ~/.claude/projects/<project>/<sessio
 - **FalkorDB versions:** the live demo runs on **FalkorDB Cloud** (free tier, v4.22.0). Locally we pin the Docker image to v4.22.1 (`:latest` on 2026-10-15). The full test suite passes on both. We haven't run it on the 6.0 Rust engine (`edge-rs`) yet.
 
 ## AI disclosure
-We built this with Claude Code, and Grok runs inside the product for fleet answers and transcript extraction. Details are in [`docs/ai-disclosure.md`](docs/ai-disclosure.md).
+We built this with Claude Code, and an LLM (Groq, `gpt-oss-120b`) runs inside the product for fleet answers, transcript extraction and the playground's *Implement this*. Details are in [`docs/ai-disclosure.md`](docs/ai-disclosure.md).
 
 ## Team
 Ishika Tyagi · Yash
