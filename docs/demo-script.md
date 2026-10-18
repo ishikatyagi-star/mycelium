@@ -2,7 +2,7 @@
 
 A presentation, not a walkthrough. You talk like you're on stage; the tour moves on screen behind you. Lines in *italics* tell you what to click. Everything else you say out loud, slowly, with the pauses marked `( pause )`.
 
-**Length:** about 3 minutes 20 seconds at a calm keynote pace (~470 words).
+**Length:** about 4 minutes at a calm keynote pace (~590 spoken words). The rules don't set a length limit; for a ~3-minute cut, see *Shorter version* at the end.
 **Deadline:** tonight, Oct 18, 11:59 PM IST.
 
 ---
@@ -132,6 +132,12 @@ A presentation, not a walkthrough. You talk like you're on stage; the tour moves
 ## Delivery notes
 - **Slow down on the turns:** "It forgets." "Here's what her agent doesn't know." "Three days, turned into one second." "Only a graph knows the story." These are the lines people remember.
 - **Let the screen breathe.** When something animates (Acts 3, 4 and 6), stop talking for a beat and let it play.
-- **If step 4 runs long,** cut "It writes code. It fixes bugs. It ships features." from Act 1.
-- **If you need it under 3:00,** drop Act 6's last line about who knows what, and step 11 with it (just press Next through it).
+
+## Shorter version (~3 minutes, ~440 words)
+Cut these and press **Next** straight through the matching steps:
+1. **Act 1:** "It writes code. It fixes bugs. It ships features."
+2. **Act 2:** the whole Graph HQ paragraph (step 2). Start at "Right now, six of these agents…"
+3. **Act 5:** the activity-feed paragraph (step 9), "And the agents talk to each other…"
+4. **Act 6:** the last line about who knows what (step 11).
+5. **Act 7:** "Questions reach the right person every time. Fifty agents at once, zero errors."
 - **If something is slow:** keep talking. Every line still makes sense if the animation is a second behind you.
