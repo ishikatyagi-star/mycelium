@@ -316,8 +316,8 @@ function MemoryPath({ s, m, at }: { s: Scenario | null; m: Memory | null; at: nu
     { label: m ? m.author.name : "Author", sub: m ? `${m.author.team} · ${m.project?.name ?? ""}` : "", color: teamColor(m?.author.team), show: 3 },
   ];
   return (
-    <div className="rounded-xl border border-line bg-bg p-3 overflow-x-auto">
-      <div className="flex items-center gap-1 min-w-max">
+    <div className="rounded-xl border border-line bg-bg p-3">
+      <div className="flex flex-wrap items-center gap-y-2 gap-x-1">
         {nodes.map((n, i) => {
           const on = at >= n.show;
           return (
