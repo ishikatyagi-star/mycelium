@@ -96,8 +96,8 @@ async def agent(dev: str, team: str, tasks: list[dict], step: float, hold: bool,
                                                               "components": sc["components"], "agent": "fleet"})
                 sid, memories = s["session_id"], s.get("memories", [])
                 log(dev, f"started '{sc['task'][:60]}' ({len(memories)} memories, {len(s['overlaps'])} overlaps)")
-                if (memories and memories[0]["similarity"] >= 0.75 and memories[0]["solution"]["status"] == "active"
-                        and memories[0]["author"]["name"] != dev):
+                if (i < len(tasks) and memories and memories[0]["similarity"] >= 0.75   # credit once per task, not per cycle
+                        and memories[0]["solution"]["status"] == "active" and memories[0]["author"]["name"] != dev):
                     await asyncio.sleep(step)
                     await call(c, "POST", f"/sessions/{sid}/outcome",
                                json={"solution_id": memories[0]["solution"]["id"], "worked": True})
